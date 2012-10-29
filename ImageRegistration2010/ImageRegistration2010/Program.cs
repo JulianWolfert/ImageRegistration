@@ -15,6 +15,7 @@ namespace ImageRegistrationConsole
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Test");
             Console.WriteLine("######## IMAGE-REGISTRATION V1.0 ########\n");
             String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
             DirectoryInfo dir = new DirectoryInfo(folderPath);
