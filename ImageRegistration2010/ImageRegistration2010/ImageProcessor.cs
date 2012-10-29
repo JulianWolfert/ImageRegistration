@@ -1,0 +1,860 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Drawing;
+using System.Drawing.Imaging;
+using AForge.Imaging;
+using AForge.Imaging.Filters;
+using Emgu.CV;
+using ImageRegistration2010;
+using Emgu.CV.Structure;
+
+namespace ImageRegistrationConsole
+{
+    class ImageProcessor
+    {
+
+        public bool equalizeHist = false;
+        public bool noiseFilter = false;
+        public int cannyThreshold = 50;
+        public bool blur = true;
+        public int adaptiveThresholdBlockSize = 4;
+        public double adaptiveThresholdParameter = 1.2d;
+        public bool addCanny = true;
+        public bool filterContoursBySize = true;
+        public bool onlyFindContours = false;
+        public int minContourLength = 150;
+        public int minContourArea = 10;
+        public double minFormFactor = 0.5;
+
+
+        public ImageProcessor()
+        {
+
+        }
+
+        //Grauwertbild erzeugen - Version 1
+        public Bitmap createGreyImage(Bitmap img)
+        {
+
+            Bitmap original = new Bitmap(img);
+
+            //make an empty bitmap the same size as original
+            Bitmap newBitmap = new Bitmap(original.Width, original.Height);
+
+            for (int i = 0; i < original.Width; i++)
+            {
+                for (int j = 0; j < original.Height; j++)
+                {
+                    //get the pixel from the original image
+                    Color originalColor = original.GetPixel(i, j);
+
+                    //create the grayscale version of the pixel
+                    int grayScale = (int)((originalColor.R * .3) + (originalColor.G * .59)
+                        + (originalColor.B * .11));
+
+                    //create the color object
+                    Color newColor = Color.FromArgb(grayScale, grayScale, grayScale);
+
+                    //set the new image's pixel to the grayscale version
+                    newBitmap.SetPixel(i, j, newColor);
+                }
+            }
+
+            return newBitmap;
+        }
+
+        //Grauwertbild erzeugen - Version 2
+        public Bitmap MakeGrayscale(Bitmap img)
+        {
+            //create a blank bitmap the same size as original
+            Bitmap newBitmap = new Bitmap(img.Width, img.Height);
+
+            //get a graphics object from the new image
+            Graphics g = Graphics.FromImage(newBitmap);
+
+            //create the grayscale ColorMatrix
+            ColorMatrix colorMatrix = new ColorMatrix(
+               new float[][] 
+            {
+              new float[] {.3f, .3f, .3f, 0, 0},
+              new float[] {.59f, .59f, .59f, 0, 0},
+              new float[] {.11f, .11f, .11f, 0, 0},
+              new float[] {0, 0, 0, 1, 0},
+              new float[] {0, 0, 0, 0, 1}
+            });
+
+            //create some image attributes
+            ImageAttributes attributes = new ImageAttributes();
+
+            //set the color matrix attribute
+            attributes.SetColorMatrix(colorMatrix);
+
+            //draw the original image on the new image
+            //using the grayscale color matrix
+            g.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height),
+               0, 0, img.Width, img.Height, GraphicsUnit.Pixel, attributes);
+
+            //dispose the Graphics object
+            g.Dispose();
+            return newBitmap;
+        }
+        
+        //Erstelle Binärbild mit Otsu-Threshold
+        public Bitmap createBinaryOtsu(Bitmap img)
+        {
+            Bitmap newimg = new Bitmap(img);
+
+            //Otsu Threshold with AForge
+            Grayscale filter1 = new Grayscale(0.2125, 0.7154, 0.0721);
+            Bitmap tmpimg = filter1.Apply(img);
+            // create filter
+            OtsuThreshold filter = new OtsuThreshold();
+            // apply the filter
+            filter.ApplyInPlace(tmpimg);
+            // check threshold value
+            int thresh_aforge = filter.ThresholdValue;
+            Console.WriteLine("Otsu-Threshold with AForge: " + thresh_aforge);        
+
+            //Apply calculated otsu threshold for binarization
+            for (int i = 0; i < img.Height; ++i)
+            {
+                for (int j = 0; j < img.Width; ++j)
+                {
+                    Color c = img.GetPixel(j, i);
+
+                    double magnitude = 1 / 3d * (c.B + c.G + c.R);
+
+                    if (magnitude < thresh_aforge)
+                    {
+                        img.SetPixel(j, i, Color.FromArgb(0, 0, 0));
+                    }
+                    else
+                    {
+                        img.SetPixel(j, i, Color.FromArgb(255, 255, 255));
+                    }
+                }
+            }
+
+            return img;
+        }
+
+        //Erstelle Contur
+        public List<Contour<Point>> findContoursWithOpenCV(Bitmap img)
+        {
+            Image<Bgr, Byte> mod_img = new Image<Bgr, byte>(img);
+            Image<Gray, Byte> gray = mod_img.Convert<Gray, Byte>();
+
+            
+            //smoothed
+            Image<Gray, byte> smoothedGrayFrame = gray.PyrDown();
+            smoothedGrayFrame = smoothedGrayFrame.PyrUp();
+
+            Image<Gray, Byte> cannyFrame = smoothedGrayFrame.Canny(cannyThreshold, cannyThreshold);
+
+            //find contours
+            var sourceContours = gray.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            //filter contours
+            List<Contour<Point>> contours  = FilterContours(sourceContours, cannyFrame, gray.Width, gray.Height);
+
+
+            return contours;
+
+
+        }
+        private List<Contour<Point>> FilterContours(Contour<Point> contours, Image<Gray, byte> cannyFrame, int frameWidth, int frameHeight)
+        {
+            int maxArea = frameWidth * frameHeight / 5;
+            var c = contours;
+            List<Contour<Point>> result = new List<Contour<Point>>();
+            while (c != null)
+            {
+                if (filterContoursBySize)
+                    if (c.Total < minContourLength ||
+                        c.Area < minContourArea || c.Area > maxArea ||
+                        c.Area / c.Total <= minFormFactor)
+                        goto next;
+
+                if (noiseFilter)
+                {
+                    Point p1 = c[0];
+                    Point p2 = c[(c.Total / 2) % c.Total];
+                    if (cannyFrame[p1].Intensity <= double.Epsilon && cannyFrame[p2].Intensity <= double.Epsilon)
+                        goto next;
+                }
+                result.Add(c);
+
+            next:
+                c = c.HNext;
+            }
+
+            return result;
+        }
+
+
+        //Not Working properly
+        private int findNextPixel(List<Pixel> contourPixel, Bitmap img, int direction)
+        {
+            Pixel currentPixel = contourPixel[contourPixel.Count - 1];
+            int x = currentPixel.getX();
+            int y = currentPixel.getY();
+
+            Pixel nextPixel = new Pixel();
+            //int newDirection = -1;
+            if (direction == 4)
+            {
+                if (img.GetPixel(x - 1, y) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y);
+                }
+            }
+
+            return 0;
+        }
+        private List<Pixel> findContour(Bitmap img)
+        {
+            List<Pixel> contourPixel = new List<Pixel>();
+
+            int height = img.Height;
+            int width = img.Width;
+
+            for (int i = 0; i < height; ++i)
+            {
+                for (int j = 0; j < width; ++j)
+                {
+                    Color c = img.GetPixel(j, i);
+
+                    //Ersten Schwarzen Pixel gefunden
+                    if (c == Color.FromArgb(0, 0, 0))
+                    {
+                        Pixel startPixel = new Pixel();
+                        startPixel.setX(j);
+                        startPixel.setY(i);
+                        contourPixel.Add(startPixel);
+
+                        //Da ich von links nach rechts laufe
+                        int direction = 4;
+
+                        Pixel nextPixel = new Pixel();
+
+                        do
+                        {
+                            direction = searchNextPixel(contourPixel, img, direction);
+                            if (direction == -1) break;
+                            Console.WriteLine("New Direction: " + direction);
+                            Console.WriteLine("New Pixel: " + contourPixel[contourPixel.Count - 1].getX() + " " + contourPixel[contourPixel.Count - 1].getY());
+                        } while ((contourPixel[contourPixel.Count - 1] != startPixel));
+
+                        Bitmap testbmp = new Bitmap(886, 248);
+                        for (int k = 0; k < contourPixel.Count; k++)
+                        {
+                            testbmp.SetPixel(contourPixel[k].getX(), contourPixel[k].getY(), Color.FromArgb(0, 0, 0));
+                        }
+
+                        testbmp.Save("C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures\\test.png");
+                        //while (startPixel.getX() != nextPixel.getX() && startPixel.getY() != nextPixel.getX())
+                        //{
+                        //    Dictionary<Pixel, int> newValues = new Dictionary<Pixel, int>();
+                        //    newValues = searchNextPixel(contourPixel, img, startPixel, direction);
+
+                        //    foreach (KeyValuePair<Pixel, int> t in newValues)
+                        //    {
+                        //        nextPixel = t.Key;
+                        //        contourPixel.Add(nextPixel);
+                        //        direction = t.Value;
+                        //    }
+                        //}
+
+
+                        //while (startPixel.getX() != nextPixel.getX() && startPixel.getY() != nextPixel.getX())
+                        //{
+                        //    nextPixel
+                        //    nextPixel = searchNextPixel(img, startPixel, (direction-2 % 8));
+                        //}
+
+                        //Pixel workPixel = new Pixel();
+                        //while (startPixel.getX() != workPixel.getX() && startPixel.getY() != workPixel.getX())
+                        //{
+                        //    if (img.GetPixel(j-1,i) == Color.FromArgb(0,0,0))
+                        //    {
+                        //        workPixel.setX(j-1);
+                        //        workPixel.setY(i);
+                        //        continue;
+                        //    }
+                        //    if (img.GetPixel(j-1,i+1) == Color.FromArgb(0,0,0))
+                        //    {
+                        //        workPixel.setX(j-1);
+                        //        workPixel.setY(i+1);
+                        //        continue;
+                        //    }
+                        //    if (img.GetPixel(j, i+1) == Color.FromArgb(0, 0, 0))
+                        //    {
+                        //        workPixel.setX(j);
+                        //        workPixel.setY(i+1);
+                        //        continue;
+                        //    }
+                        //    if (img.GetPixel(j+1, i+1) == Color.FromArgb(0, 0, 0))
+                        //    {
+                        //        workPixel.setX(j+1);
+                        //        workPixel.setY(i+1);
+                        //        continue;
+                        //    }
+                        //    if (img.GetPixel(j+1, i) == Color.FromArgb(0, 0, 0))
+                        //    {
+                        //        workPixel.setX(j+1);
+                        //        workPixel.setY(i);
+                        //        continue;
+                        //    }
+                        //    if (img.GetPixel(j+1, i-1) == Color.FromArgb(0, 0, 0))
+                        //    {
+                        //        workPixel.setX(j+1);
+                        //        workPixel.setY(i-1);
+                        //        continue;
+                        //    }
+                        //    if (img.GetPixel(j, i-1) == Color.FromArgb(0, 0, 0))
+                        //    {
+                        //        workPixel.setX(j);
+                        //        workPixel.setY(i-1);
+                        //        continue;
+                        //    }
+                        //    if (img.GetPixel(j-1, i-1) == Color.FromArgb(0, 0, 0))
+                        //    {
+                        //        workPixel.setX(j-1);
+                        //        workPixel.setY(i-1);
+                        //        continue;
+                        //    }
+                        //}
+
+                    }
+
+
+                }
+            }
+
+            return contourPixel;
+        }
+        private int searchNextPixel(List<Pixel> pixels, Bitmap img, int direction)
+        {
+            Pixel nextPixel = new Pixel();
+            int x = pixels[pixels.Count - 1].getX();
+            int y = pixels[pixels.Count - 1].getY();
+
+            if (direction == 4)
+            {
+                //Richtung 4
+                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                if (img.GetPixel(x + 1, y) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                //Richtung 2
+                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                if (img.GetPixel(x, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                //Richtung 0
+                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                if (img.GetPixel(x - 1, y) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                //Richtung 6
+                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                if (img.GetPixel(x, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+
+
+            }
+            if (direction == 2)
+            {
+                //Richtung 2
+                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                if (img.GetPixel(x, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                //Richtung 0
+                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                if (img.GetPixel(x - 1, y) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                //Richtung 6
+                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                if (img.GetPixel(x, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                //Richtung 4
+                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                if (img.GetPixel(x + 1, y) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+
+            }
+            if (direction == 6)
+            {
+                //Richtung 6
+                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                if (img.GetPixel(x, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                //Richtung 4
+                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                if (img.GetPixel(x + 1, y) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                //Richtung 2
+                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                if (img.GetPixel(x, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                //Richtung 0
+                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                if (img.GetPixel(x - 1, y) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+            }
+            if (direction == 0)
+            {
+                //Richtung 0
+                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                if (img.GetPixel(x - 1, y) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                //Richtung 6
+                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 0;
+                    }
+                }
+                if (img.GetPixel(x, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                //Richtung 4
+                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y - 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 6;
+                    }
+                }
+                if (img.GetPixel(x + 1, y) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                //Richtung 2
+                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x + 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 4;
+                    }
+                }
+                if (img.GetPixel(x, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
+                {
+                    nextPixel.setX(x - 1);
+                    nextPixel.setY(y + 1);
+                    if (!pixels.Contains(nextPixel))
+                    {
+                        pixels.Add(nextPixel);
+                        return 2;
+                    }
+                }
+            }
+
+            return -1;
+        }
+    }
+}
