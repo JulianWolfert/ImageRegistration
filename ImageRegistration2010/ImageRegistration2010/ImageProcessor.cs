@@ -15,19 +15,24 @@ namespace ImageRegistrationConsole
 {
     class ImageProcessor
     {
-
-        public bool equalizeHist = false;
+        //Filteroptions
         public bool noiseFilter = false;
-        public int cannyThreshold = 50;
-        public bool blur = true;
-        public int adaptiveThresholdBlockSize = 4;
-        public double adaptiveThresholdParameter = 1.2d;
-        public bool addCanny = true;
         public bool filterContoursBySize = true;
-        public bool onlyFindContours = false;
-        public int minContourLength = 150;
+        public bool filterOnlyBiggestByPixel = true;
+
+        //Parameters
+        public int minContourLength = 100;
         public int minContourArea = 10;
         public double minFormFactor = 0.5;
+        public int cannyThreshold = 50;
+
+        //public bool equalizeHist = false;
+        //public bool blur = false;
+        //public int adaptiveThresholdBlockSize = 4;
+        //public double adaptiveThresholdParameter = 1.2d;
+        //public bool addCanny = true;
+        //public bool onlyFindContours = false;
+
 
 
         public ImageProcessor()
@@ -152,7 +157,7 @@ namespace ImageRegistrationConsole
             Image<Gray, byte> smoothedGrayFrame = gray.PyrDown();
             smoothedGrayFrame = smoothedGrayFrame.PyrUp();
 
-            Image<Gray, Byte> cannyFrame = smoothedGrayFrame.Canny(cannyThreshold, cannyThreshold);
+            Image<Gray, Byte> cannyFrame = smoothedGrayFrame.Canny(100, 300);
 
             //find contours
             var sourceContours = gray.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
@@ -166,29 +171,81 @@ namespace ImageRegistrationConsole
         }
         private List<Contour<Point>> FilterContours(Contour<Point> contours, Image<Gray, byte> cannyFrame, int frameWidth, int frameHeight)
         {
-            int maxArea = frameWidth * frameHeight / 5;
-            var c = contours;
+            int maxArea = frameWidth * frameHeight;
+            var c = contours; 
             List<Contour<Point>> result = new List<Contour<Point>>();
-            while (c != null)
+
+            if (filterOnlyBiggestByPixel)
             {
-                if (filterContoursBySize)
-                    if (c.Total < minContourLength ||
-                        c.Area < minContourArea || c.Area > maxArea ||
-                        c.Area / c.Total <= minFormFactor)
-                        goto next;
-
-                if (noiseFilter)
+                var maxContour = c;
+                //Put all Contours in a List
+                while (c != null)
                 {
-                    Point p1 = c[0];
-                    Point p2 = c[(c.Total / 2) % c.Total];
-                    if (cannyFrame[p1].Intensity <= double.Epsilon && cannyFrame[p2].Intensity <= double.Epsilon)
-                        goto next;
+                    if (c.Total > maxContour.Total && c.Area < maxArea)
+                        maxContour = c;
+                    c = c.HNext;
                 }
-                result.Add(c);
-
-            next:
-                c = c.HNext;
+                result.Add(maxContour);
             }
+            else 
+            {
+                 while (c != null)
+                {
+
+                    if (filterContoursBySize)
+                        if (c.Total < minContourLength)
+                            //c.Area < minContourArea || 
+                            //c.Area > maxArea
+                            //c.Area / c.Total <= minFormFactor
+                        
+                            goto next;
+
+                    if (noiseFilter)
+                    {
+                        Point p1 = c[0];
+                        Point p2 = c[(c.Total / 2) % c.Total];
+                        if (cannyFrame[p1].Intensity <= double.Epsilon && cannyFrame[p2].Intensity <= double.Epsilon)
+                            goto next;
+                    }
+                    result.Add(c);
+
+                next:
+                    c = c.HNext;
+                }
+            }
+
+
+            //List<Contour<Point>> result = new List<Contour<Point>>();
+
+            //while (c != null)
+            //{
+
+            //    if (filterOnlyBiggestByPixel)
+            //    {
+            //        if (c.Total > maxContour)
+            //            maxContour = c.Total;
+            //    }
+
+            //    if (filterContoursBySize)
+            //        if (c.Total < minContourLength)
+            //            //c.Area < minContourArea || 
+            //            //c.Area > maxArea
+            //            //c.Area / c.Total <= minFormFactor
+                        
+            //            goto next;
+
+            //    if (noiseFilter)
+            //    {
+            //        Point p1 = c[0];
+            //        Point p2 = c[(c.Total / 2) % c.Total];
+            //        if (cannyFrame[p1].Intensity <= double.Epsilon && cannyFrame[p2].Intensity <= double.Epsilon)
+            //            goto next;
+            //    }
+            //    result.Add(c);
+
+            //next:
+            //    c = c.HNext;
+            //}
 
             return result;
         }

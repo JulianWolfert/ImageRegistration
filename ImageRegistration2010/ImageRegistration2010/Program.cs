@@ -59,11 +59,11 @@ namespace ImageRegistrationConsole
 
             //Erstelle Binaerbild von A mit Otsu-Methode und speichere ab
             Bitmap image1bin = imageProcessor.createBinaryOtsu(image1grey);
-            //image1bin.Save(outputfolder + "\\Abin.png", ImageFormat.Png);
+            image1bin.Save(outputfolder + "\\Abin.png", ImageFormat.Png);
 
             //Erstelle Binaerbild von A mit Otsu-Methode und speichere ab
             Bitmap image2bin = imageProcessor.createBinaryOtsu(image2grey);
-            //image2bin.Save(outputfolder + "\\Bbin.png", ImageFormat.Png);
+            image2bin.Save(outputfolder + "\\Bbin.png", ImageFormat.Png);
 
             List<Contour<Point>> contours_image1 = imageProcessor.findContoursWithOpenCV(image1bin);
             //exporter.exportToCSV(contours_image1, outputfolder, "contourA.csv");
