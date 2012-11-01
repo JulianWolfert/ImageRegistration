@@ -18,7 +18,7 @@ namespace ImageRegistrationConsole
         //Filteroptions
         public bool noiseFilter = false;
         public bool filterContoursBySize = true;
-        public bool filterOnlyBiggestByPixel = true;
+        public bool filterOnlyBiggestByPixel = false;
 
         //Parameters
         public int minContourLength = 100;
@@ -48,7 +48,7 @@ namespace ImageRegistrationConsole
 
             //make an empty bitmap the same size as original
             Bitmap newBitmap = new Bitmap(original.Width, original.Height);
-
+             
             for (int i = 0; i < original.Width; i++)
             {
                 for (int j = 0; j < original.Height; j++)
@@ -110,6 +110,9 @@ namespace ImageRegistrationConsole
         //Erstelle Binärbild mit Otsu-Threshold
         public Bitmap createBinaryOtsu(Bitmap img)
         {
+
+
+
             Bitmap newimg = new Bitmap(img);
 
             //Otsu Threshold with AForge
@@ -121,7 +124,8 @@ namespace ImageRegistrationConsole
             filter.ApplyInPlace(tmpimg);
             // check threshold value
             int thresh_aforge = filter.ThresholdValue;
-            Console.WriteLine("Otsu-Threshold with AForge: " + thresh_aforge);        
+            Console.WriteLine("Otsu-Threshold with AForge: " + thresh_aforge);
+
 
             //Apply calculated otsu threshold for binarization
             for (int i = 0; i < img.Height; ++i)
@@ -142,6 +146,7 @@ namespace ImageRegistrationConsole
                     }
                 }
             }
+
 
             return img;
         }

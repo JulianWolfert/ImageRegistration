@@ -5,6 +5,7 @@ using System.Text;
 using System.Drawing;
 using Emgu.CV;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace ImageRegistration2010
 {
@@ -12,7 +13,16 @@ namespace ImageRegistration2010
     {
         internal void exportToCSV(List<Contour<Point>> contourPixel_image1, string outputfolder, string filename)
         {
-            throw new NotImplementedException();
+            string aFileName = outputfolder + "\\" + filename;
+            FileStream aFileStream = new FileStream(aFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            StreamWriter m_StreamWriter = new StreamWriter(aFileStream);
+            for (int i = 0; i < contourPixel_image1.Count; i++)
+            {
+                m_StreamWriter.Write(contourPixel_image1[1][i].X.ToString());
+                m_StreamWriter.Write(";");
+                m_StreamWriter.Write(contourPixel_image1[1 ][i].Y.ToString());
+                m_StreamWriter.Write("\n");
+            }
         }
 
         internal void exportToImage(List<Contour<Point>> contourPixel_image, string outputfolder, string filename, int height, int width)
