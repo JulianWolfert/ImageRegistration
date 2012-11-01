@@ -10,6 +10,7 @@ using AForge.Imaging.Filters;
 using Emgu.CV;
 using ImageRegistration2010;
 using Emgu.CV.Structure;
+using Emgu.CV.CvEnum;
 
 namespace ImageRegistrationConsole
 {
@@ -110,45 +111,26 @@ namespace ImageRegistrationConsole
         //Erstelle Binärbild mit Otsu-Threshold
         public Bitmap createBinaryOtsu(Bitmap img)
         {
+            Median medianFilter = new Median();
+            medianFilter.ApplyInPlace(img);
 
+            GaussianBlur gaussianFilter = new GaussianBlur();
+            gaussianFilter.ApplyInPlace(img);
 
+            Grayscale greyFilter = new Grayscale(0.2125, 0.7154, 0.0721);
+            Bitmap greyImage = greyFilter.Apply(img);
+            OtsuThreshold otsuFilter = new OtsuThreshold();
+            otsuFilter.ApplyInPlace(greyImage);
 
-            Bitmap newimg = new Bitmap(img);
+            BinaryErosion3x3 erosionFilter = new BinaryErosion3x3();
+            erosionFilter.ApplyInPlace(greyImage);
 
-            //Otsu Threshold with AForge
-            Grayscale filter1 = new Grayscale(0.2125, 0.7154, 0.0721);
-            Bitmap tmpimg = filter1.Apply(img);
             // create filter
-            OtsuThreshold filter = new OtsuThreshold();
+            ExtractBiggestBlob filter = new ExtractBiggestBlob( );
             // apply the filter
-            filter.ApplyInPlace(tmpimg);
-            // check threshold value
-            int thresh_aforge = filter.ThresholdValue;
-            Console.WriteLine("Otsu-Threshold with AForge: " + thresh_aforge);
+            Bitmap biggestBlobsImage = filter.Apply( greyImage );   
 
-
-            //Apply calculated otsu threshold for binarization
-            for (int i = 0; i < img.Height; ++i)
-            {
-                for (int j = 0; j < img.Width; ++j)
-                {
-                    Color c = img.GetPixel(j, i);
-
-                    double magnitude = 1 / 3d * (c.B + c.G + c.R);
-
-                    if (magnitude < thresh_aforge)
-                    {
-                        img.SetPixel(j, i, Color.FromArgb(0, 0, 0));
-                    }
-                    else
-                    {
-                        img.SetPixel(j, i, Color.FromArgb(255, 255, 255));
-                    }
-                }
-            }
-
-
-            return img;
+            return greyImage;
         }
 
         //Erstelle Contur
@@ -254,6 +236,7 @@ namespace ImageRegistrationConsole
 
             return result;
         }
+
 
 
         //Not Working properly
@@ -918,5 +901,6 @@ namespace ImageRegistrationConsole
 
             return -1;
         }
+
     }
 }

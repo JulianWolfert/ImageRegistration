@@ -6,6 +6,7 @@ using System.Drawing;
 using Emgu.CV;
 using System.Drawing.Imaging;
 using System.IO;
+using AForge.Imaging.Filters;
 
 namespace ImageRegistration2010
 {
@@ -26,7 +27,8 @@ namespace ImageRegistration2010
         }
 
         internal void exportToImage(List<Contour<Point>> contourPixel_image, string outputfolder, string filename, int height, int width)
-        {
+        {         
+            
             Bitmap newbmp = new Bitmap(width, height);
 
             for (int i = 0; i < contourPixel_image.Count; i++)
@@ -37,6 +39,8 @@ namespace ImageRegistration2010
                     newbmp.SetPixel(points[k].X, points[k].Y, Color.FromArgb(0, 0, 0));
                 }
             }
+
+
 
             newbmp.Save(outputfolder + "\\" + filename, ImageFormat.Png);
         }

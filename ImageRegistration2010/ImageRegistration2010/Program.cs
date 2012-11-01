@@ -49,20 +49,21 @@ namespace ImageRegistrationConsole
             ImageProcessor imageProcessor = new ImageProcessor();
             Exporter exporter = new Exporter();
 
-            //Erstelle Grauwertbild von A und speichere ab
-            Bitmap image1grey = imageProcessor.MakeGrayscale(A);
-            //image1grey.Save(outputfolder + "\\Agrey.png", ImageFormat.Png);
 
-            //Erstelle Grauwertbild von B und speichere ab
-            Bitmap image2grey = imageProcessor.MakeGrayscale(B);
-            //image2grey.Save(outputfolder + "\\Bgrey.png", ImageFormat.Png);
+            ////Erstelle Grauwertbild von A und speichere ab
+            //Bitmap image1grey = imageProcessor.MakeGrayscale(A);
+            ////image1grey.Save(outputfolder + "\\Agrey.png", ImageFormat.Png);
 
-            //Erstelle Binaerbild von A mit Otsu-Methode und speichere ab
-            Bitmap image1bin = imageProcessor.createBinaryOtsu(image1grey);
+            ////Erstelle Grauwertbild von B und speichere ab
+            //Bitmap image2grey = imageProcessor.MakeGrayscale(B);
+            ////image2grey.Save(outputfolder + "\\Bgrey.png", ImageFormat.Png);
+
+            ////Erstelle Binaerbild von A mit Otsu-Methode und speichere ab
+            Bitmap image1bin = imageProcessor.createBinaryOtsu(A);
             image1bin.Save(outputfolder + "\\Abin.png", ImageFormat.Png);
 
-            //Erstelle Binaerbild von A mit Otsu-Methode und speichere ab
-            Bitmap image2bin = imageProcessor.createBinaryOtsu(image2grey);
+            ////Erstelle Binaerbild von A mit Otsu-Methode und speichere ab
+            Bitmap image2bin = imageProcessor.createBinaryOtsu(B);
             image2bin.Save(outputfolder + "\\Bbin.png", ImageFormat.Png);
 
             List<Contour<Point>> contours_image1 = imageProcessor.findContoursWithOpenCV(image1bin);
