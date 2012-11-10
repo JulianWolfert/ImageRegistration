@@ -16,8 +16,8 @@ namespace ImageRegistrationConsole
         static void Main(string[] args)
         {
             Console.WriteLine("######## IMAGE-REGISTRATION V1.0 ########\n");
-            String folderPath = "C:\\Users\\Jules\\Documents\\Medizinische Bildverarbeitung\\Pictures";
-            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
+            //String folderPath = "C:\\Users\\Jules\\Documents\\Medizinische Bildverarbeitung\\Pictures";
+            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
             DirectoryInfo dir = new DirectoryInfo(folderPath);
             Console.WriteLine("Lade Bilder aus dem Verzeichnis: " + folderPath);
             int count = dir.GetFiles().Count();

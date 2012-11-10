@@ -18,21 +18,22 @@ namespace ImageRegistrationConsole
     {
         //Filteroptions
         public bool noiseFilter = false;
-        public bool filterContoursBySize = true;
-        public bool filterOnlyBiggestByPixel = false;
+        public bool filterContoursBySize = false;
 
         //Parameters
-        public int minContourLength = 100;
+        public int minContourLength = 10;
         public int minContourArea = 10;
         public double minFormFactor = 0.5;
-        public int cannyThreshold = 50;
+        public int cannyThreshold = 10;
 
-        //public bool equalizeHist = false;
-        //public bool blur = false;
-        //public int adaptiveThresholdBlockSize = 4;
-        //public double adaptiveThresholdParameter = 1.2d;
-        //public bool addCanny = true;
-        //public bool onlyFindContours = false;
+        public bool equalizeHist = false;
+        public bool blur = false;
+        public int adaptiveThresholdBlockSize = 4;
+        public double adaptiveThresholdParameter = 1.2d;
+        public bool addCanny = true;
+
+        public Image<Gray, byte> binarizedFrame;
+        public Image<Gray, byte> cannyFrame = null;
 
 
 
@@ -111,57 +112,48 @@ namespace ImageRegistrationConsole
         //Erstelle Binärbild mit Otsu-Threshold
         public Bitmap createBinaryOtsu(Bitmap img)
         {
-            Image<Bgr, Byte> mod_img = new Image<Bgr, byte>(img);
-            mod_img = mod_img.SmoothBlur(5, 5, true);
 
-            Image<Gray, Byte> otsuImage = new Image<Gray, Byte>(mod_img.Size);
-            CvInvoke.cvThreshold(mod_img.Convert<Gray, byte>(), otsuImage, 64, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
+            Image<Gray, Byte> grayFrame = new Image<Gray, byte>(img);
 
-            otsuImage = otsuImage.Dilate(10).Erode(10);
-           // Median medianFilter = new Median();
-           // medianFilter.ApplyInPlace(img);
+            if (equalizeHist)
+                grayFrame._EqualizeHist();//autocontrast
+            //smoothed
+            Image<Gray, byte> smoothedGrayFrame = grayFrame.PyrDown();
+            smoothedGrayFrame = smoothedGrayFrame.PyrUp();
+            //canny
+            if (noiseFilter)
+                this.cannyFrame = smoothedGrayFrame.Canny(cannyThreshold, cannyThreshold);
+            //smoothing
+            if (blur)
+                grayFrame = smoothedGrayFrame;
+            //binarize
+            CvInvoke.cvAdaptiveThreshold(grayFrame, grayFrame, 255, Emgu.CV.CvEnum.ADAPTIVE_THRESHOLD_TYPE.CV_ADAPTIVE_THRESH_MEAN_C, Emgu.CV.CvEnum.THRESH.CV_THRESH_BINARY, adaptiveThresholdBlockSize + adaptiveThresholdBlockSize % 2 + 1, adaptiveThresholdParameter);
+            //
+            grayFrame._Not();
+            //
+            if (addCanny)
+                if (this.cannyFrame != null)
+                    grayFrame._Or(this.cannyFrame);
+            //
+            this.binarizedFrame = grayFrame;
 
-           // GaussianBlur gaussianFilter = new GaussianBlur();
-           // gaussianFilter.ApplyInPlace(img);
+            //dilate canny contours for filtering
+            if (this.cannyFrame != null)
+                this.cannyFrame = this.cannyFrame.Dilate(3);
 
-           // //Grayscale greyFilter = new Grayscale(0.2125, 0.7154, 0.0721);
-           // Bitmap greyImage = Grayscale.CommonAlgorithms.BT709.Apply(img);
-           // //greyFilter.Apply(img);
-           // OtsuThreshold otsuFilter = new OtsuThreshold();
-           // //otsuFilter.ApplyInPlace(greyImage);
-           // Threshold filter = new Threshold(filter.Apply(img).;
-           // filter.ApplyInPlace(greyImage);
 
-           // BinaryErosion3x3 erosionFilter = new BinaryErosion3x3();
-           // //erosionFilter.ApplyInPlace(greyImage);
-           // //erosionFilter.ApplyInPlace(greyImage);
-           // //erosionFilter.ApplyInPlace(greyImage);
-
-           // // create filter
-           // //ExtractBiggestBlob filter = new ExtractBiggestBlob( );
-           // // apply the filter
-           // //Bitmap biggestBlobsImage = filter.Apply( img );   
-
-           //// return greyImage;
-            return otsuImage.ToBitmap();
+            return grayFrame.ToBitmap();
         }
 
         //Erstelle Contur
         public List<Contour<Point>> findContoursWithOpenCV(Bitmap img)
         {
-            Image<Bgr, Byte> mod_img = new Image<Bgr, byte>(img);
-            Image<Gray, Byte> gray = mod_img.Convert<Gray, Byte>();
-            
-            //smoothed
-            Image<Gray, byte> smoothedGrayFrame = gray.PyrDown();
-            smoothedGrayFrame = smoothedGrayFrame.PyrUp();
-
-            Image<Gray, Byte> cannyFrame = smoothedGrayFrame.Canny(100, 300);
+            Image<Gray, Byte> grayFrame = new Image<Gray, byte>(img);
 
             //find contours
-            var sourceContours = gray.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            var sourceContours = grayFrame.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
             //filter contours
-            List<Contour<Point>> contours  = FilterContours(sourceContours, cannyFrame, gray.Width, gray.Height);
+            List<Contour<Point>> contours  = FilterContours(sourceContours, this.cannyFrame, grayFrame.Width, grayFrame.Height);
 
 
             return contours;
@@ -170,81 +162,29 @@ namespace ImageRegistrationConsole
         }
         private List<Contour<Point>> FilterContours(Contour<Point> contours, Image<Gray, byte> cannyFrame, int frameWidth, int frameHeight)
         {
-            int maxArea = frameWidth * frameHeight;
-            var c = contours; 
+            int maxArea = frameWidth * frameHeight / 5;
+            var c = contours;
             List<Contour<Point>> result = new List<Contour<Point>>();
-
-            if (filterOnlyBiggestByPixel)
+            while (c != null)
             {
-                var maxContour = c;
-                //Put all Contours in a List
-                while (c != null)
+                if (filterContoursBySize)
+                    if (c.Total < minContourLength ||
+                        c.Area < minContourArea || c.Area > maxArea ||
+                        c.Area / c.Total <= minFormFactor)
+                        goto next;
+
+                if (noiseFilter)
                 {
-                    if (c.Total > maxContour.Total && c.Area < maxArea)
-                        maxContour = c;
-                    c = c.HNext;
+                    Point p1 = c[0];
+                    Point p2 = c[(c.Total / 2) % c.Total];
+                    if (cannyFrame[p1].Intensity <= double.Epsilon && cannyFrame[p2].Intensity <= double.Epsilon)
+                        goto next;
                 }
-                result.Add(maxContour);
+                result.Add(c);
+
+            next:
+                c = c.HNext;
             }
-            else 
-            {
-                 while (c != null)
-                {
-
-                    if (filterContoursBySize)
-                        if (c.Total < minContourLength)
-                            //c.Area < minContourArea || 
-                            //c.Area > maxArea
-                            //c.Area / c.Total <= minFormFactor
-                        
-                            goto next;
-
-                    if (noiseFilter)
-                    {
-                        Point p1 = c[0];
-                        Point p2 = c[(c.Total / 2) % c.Total];
-                        if (cannyFrame[p1].Intensity <= double.Epsilon && cannyFrame[p2].Intensity <= double.Epsilon)
-                            goto next;
-                    }
-                    result.Add(c);
-
-                next:
-                    c = c.HNext;
-                }
-            }
-
-
-            //List<Contour<Point>> result = new List<Contour<Point>>();
-
-            //while (c != null)
-            //{
-
-            //    if (filterOnlyBiggestByPixel)
-            //    {
-            //        if (c.Total > maxContour)
-            //            maxContour = c.Total;
-            //    }
-
-            //    if (filterContoursBySize)
-            //        if (c.Total < minContourLength)
-            //            //c.Area < minContourArea || 
-            //            //c.Area > maxArea
-            //            //c.Area / c.Total <= minFormFactor
-                        
-            //            goto next;
-
-            //    if (noiseFilter)
-            //    {
-            //        Point p1 = c[0];
-            //        Point p2 = c[(c.Total / 2) % c.Total];
-            //        if (cannyFrame[p1].Intensity <= double.Epsilon && cannyFrame[p2].Intensity <= double.Epsilon)
-            //            goto next;
-            //    }
-            //    result.Add(c);
-
-            //next:
-            //    c = c.HNext;
-            //}
 
             return result;
         }
