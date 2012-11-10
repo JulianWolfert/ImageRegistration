@@ -19,9 +19,9 @@ namespace ImageRegistration2010
             StreamWriter m_StreamWriter = new StreamWriter(aFileStream);
             for (int i = 0; i < contourPixel_image1.Count; i++)
             {
-                m_StreamWriter.Write(contourPixel_image1[1][i].X.ToString());
+                m_StreamWriter.Write(contourPixel_image1[0][i].X.ToString());
                 m_StreamWriter.Write(";");
-                m_StreamWriter.Write(contourPixel_image1[1 ][i].Y.ToString());
+                m_StreamWriter.Write(contourPixel_image1[0][i].Y.ToString());
                 m_StreamWriter.Write("\n");
             }
         }

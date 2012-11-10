@@ -16,7 +16,8 @@ namespace ImageRegistrationConsole
         static void Main(string[] args)
         {
             Console.WriteLine("######## IMAGE-REGISTRATION V1.0 ########\n");
-            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
+            String folderPath = "C:\\Users\\Jules\\Documents\\Medizinische Bildverarbeitung\\Pictures";
+            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
             DirectoryInfo dir = new DirectoryInfo(folderPath);
             Console.WriteLine("Lade Bilder aus dem Verzeichnis: " + folderPath);
             int count = dir.GetFiles().Count();
@@ -65,6 +66,7 @@ namespace ImageRegistrationConsole
             ////Erstelle Binaerbild von A mit Otsu-Methode und speichere ab
             Bitmap image2bin = imageProcessor.createBinaryOtsu(B);
             image2bin.Save(outputfolder + "\\Bbin.png", ImageFormat.Png);
+
 
             List<Contour<Point>> contours_image1 = imageProcessor.findContoursWithOpenCV(image1bin);
             //exporter.exportToCSV(contours_image1, outputfolder, "contourA.csv");

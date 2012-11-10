@@ -111,26 +111,39 @@ namespace ImageRegistrationConsole
         //Erstelle Binärbild mit Otsu-Threshold
         public Bitmap createBinaryOtsu(Bitmap img)
         {
-            Median medianFilter = new Median();
-            medianFilter.ApplyInPlace(img);
+            Image<Bgr, Byte> mod_img = new Image<Bgr, byte>(img);
+            mod_img = mod_img.SmoothBlur(5, 5, true);
 
-            GaussianBlur gaussianFilter = new GaussianBlur();
-            gaussianFilter.ApplyInPlace(img);
+            Image<Gray, Byte> otsuImage = new Image<Gray, Byte>(mod_img.Size);
+            CvInvoke.cvThreshold(mod_img.Convert<Gray, byte>(), otsuImage, 64, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
 
-            Grayscale greyFilter = new Grayscale(0.2125, 0.7154, 0.0721);
-            Bitmap greyImage = greyFilter.Apply(img);
-            OtsuThreshold otsuFilter = new OtsuThreshold();
-            otsuFilter.ApplyInPlace(greyImage);
+            otsuImage = otsuImage.Dilate(10).Erode(10);
+           // Median medianFilter = new Median();
+           // medianFilter.ApplyInPlace(img);
 
-            BinaryErosion3x3 erosionFilter = new BinaryErosion3x3();
-            erosionFilter.ApplyInPlace(greyImage);
+           // GaussianBlur gaussianFilter = new GaussianBlur();
+           // gaussianFilter.ApplyInPlace(img);
 
-            // create filter
-            ExtractBiggestBlob filter = new ExtractBiggestBlob( );
-            // apply the filter
-            Bitmap biggestBlobsImage = filter.Apply( greyImage );   
+           // //Grayscale greyFilter = new Grayscale(0.2125, 0.7154, 0.0721);
+           // Bitmap greyImage = Grayscale.CommonAlgorithms.BT709.Apply(img);
+           // //greyFilter.Apply(img);
+           // OtsuThreshold otsuFilter = new OtsuThreshold();
+           // //otsuFilter.ApplyInPlace(greyImage);
+           // Threshold filter = new Threshold(filter.Apply(img).;
+           // filter.ApplyInPlace(greyImage);
 
-            return greyImage;
+           // BinaryErosion3x3 erosionFilter = new BinaryErosion3x3();
+           // //erosionFilter.ApplyInPlace(greyImage);
+           // //erosionFilter.ApplyInPlace(greyImage);
+           // //erosionFilter.ApplyInPlace(greyImage);
+
+           // // create filter
+           // //ExtractBiggestBlob filter = new ExtractBiggestBlob( );
+           // // apply the filter
+           // //Bitmap biggestBlobsImage = filter.Apply( img );   
+
+           //// return greyImage;
+            return otsuImage.ToBitmap();
         }
 
         //Erstelle Contur
@@ -138,7 +151,6 @@ namespace ImageRegistrationConsole
         {
             Image<Bgr, Byte> mod_img = new Image<Bgr, byte>(img);
             Image<Gray, Byte> gray = mod_img.Convert<Gray, Byte>();
-
             
             //smoothed
             Image<Gray, byte> smoothedGrayFrame = gray.PyrDown();
@@ -259,7 +271,7 @@ namespace ImageRegistrationConsole
 
             return 0;
         }
-        private List<Pixel> findContour(Bitmap img)
+        public List<Pixel> findContour(Bitmap img)
         {
             List<Pixel> contourPixel = new List<Pixel>();
 
@@ -299,7 +311,7 @@ namespace ImageRegistrationConsole
                             testbmp.SetPixel(contourPixel[k].getX(), contourPixel[k].getY(), Color.FromArgb(0, 0, 0));
                         }
 
-                        testbmp.Save("C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures\\test.png");
+                        testbmp.Save("C:\\Users\\Jules\\Documents\\Medizinische Bildverarbeitung\\Pictures\\test.png");
 
                     }
 
@@ -311,24 +323,66 @@ namespace ImageRegistrationConsole
         }
         private int searchNextPixel(List<Pixel> pixels, Bitmap img, int direction)
         {
+            Pixel lastPixel = pixels.Last();
             if (direction == 4)
             {
-                if (check5) return
+                if (check5(pixels, img, lastPixel.getX(), lastPixel.getY())) return 2;
+                if (check6(pixels, img, lastPixel.getX(), lastPixel.getY())) return 4;
+                if (check7(pixels, img, lastPixel.getX(), lastPixel.getY())) return 4;
+                if (check0(pixels, img, lastPixel.getX(), lastPixel.getY())) return 6;
+                if (check1(pixels, img, lastPixel.getX(), lastPixel.getY())) return 6;
+                if (check2(pixels, img, lastPixel.getX(), lastPixel.getY())) return 0;
+                if (check3(pixels, img, lastPixel.getX(), lastPixel.getY())) return 0;
+            }
+            if (direction == 2)
+            {
+                if (check3(pixels, img, lastPixel.getX(), lastPixel.getY())) return 0;
+                if (check4(pixels, img, lastPixel.getX(), lastPixel.getY())) return 2;
+                if (check5(pixels, img, lastPixel.getX(), lastPixel.getY())) return 2;
+                if (check6(pixels, img, lastPixel.getX(), lastPixel.getY())) return 4;
+                if (check7(pixels, img, lastPixel.getX(), lastPixel.getY())) return 4;
+                if (check0(pixels, img, lastPixel.getX(), lastPixel.getY())) return 6;
+                if (check1(pixels, img, lastPixel.getX(), lastPixel.getY())) return 6;
+            }
+            if (direction == 0)
+            {
+                if (check1(pixels, img, lastPixel.getX(), lastPixel.getY())) return 6;
+                if (check2(pixels, img, lastPixel.getX(), lastPixel.getY())) return 0;
+                if (check3(pixels, img, lastPixel.getX(), lastPixel.getY())) return 0;
+                if (check4(pixels, img, lastPixel.getX(), lastPixel.getY())) return 2;
+                if (check5(pixels, img, lastPixel.getX(), lastPixel.getY())) return 2;
+                if (check6(pixels, img, lastPixel.getX(), lastPixel.getY())) return 4;
+                if (check7(pixels, img, lastPixel.getX(), lastPixel.getY())) return 4;
+            }
+            if (direction == 6)
+            {
+                if (check7(pixels, img, lastPixel.getX(), lastPixel.getY())) return 4;
+                if (check0(pixels, img, lastPixel.getX(), lastPixel.getY())) return 6;
+                if (check1(pixels, img, lastPixel.getX(), lastPixel.getY())) return 6;
+                if (check2(pixels, img, lastPixel.getX(), lastPixel.getY())) return 0;
+                if (check3(pixels, img, lastPixel.getX(), lastPixel.getY())) return 0;
+                if (check4(pixels, img, lastPixel.getX(), lastPixel.getY())) return 2;
+                if (check5(pixels, img, lastPixel.getX(), lastPixel.getY())) return 2;
+            }
             return -1;
         }
 
 
-        private bool check1(Bitmap img, int x, int y)
+        private bool check1(List<Pixel> pixels, Bitmap img, int x, int y)
         {
             Color c = img.GetPixel(x + 1, y - 1);
             if (c == Color.FromArgb(0, 0, 0))
             {
+                Pixel newPixel = new Pixel();
+                newPixel.setX(x + 1);
+                newPixel.setY(y-1);
+                pixels.Add(newPixel);
                 return true;
             }
             else
                 return false;
         }
-        private int check2(List<Pixel> pixels, Bitmap img, int x, int y)
+        private bool check2(List<Pixel> pixels, Bitmap img, int x, int y)
         {
             Color c = img.GetPixel(x, y - 1);
             if (c == Color.FromArgb(0, 0, 0))
@@ -342,61 +396,85 @@ namespace ImageRegistrationConsole
             else
                 return false;
         }
-        private bool check3(Bitmap img, int x, int y)
+        private bool check3(List<Pixel> pixels, Bitmap img, int x, int y)
         {
             Color c = img.GetPixel(x - 1, y - 1);
             if (c == Color.FromArgb(0, 0, 0))
             {
+                Pixel newPixel = new Pixel();
+                newPixel.setX(x-1);
+                newPixel.setY(y-1);
+                pixels.Add(newPixel);
                 return true;
             }
             else
                 return false;
         }
-        private bool check4(Bitmap img, int x, int y)
+        private bool check4(List<Pixel> pixels, Bitmap img, int x, int y)
         {
             Color c = img.GetPixel(x - 1, y);
             if (c == Color.FromArgb(0, 0, 0))
             {
+                Pixel newPixel = new Pixel();
+                newPixel.setX(x-1);
+                newPixel.setY(y);
+                pixels.Add(newPixel);
                 return true;
             }
             else
                 return false;
         }
-        private bool check5(Bitmap img, int x, int y)
+        private bool check5(List<Pixel> pixels, Bitmap img, int x, int y)
         {
             Color c = img.GetPixel(x - 1, y + 1);
             if (c == Color.FromArgb(0, 0, 0))
             {
+                Pixel newPixel = new Pixel();
+                newPixel.setX(x-1);
+                newPixel.setY(y+1);
+                pixels.Add(newPixel);
                 return true;
             }
             else
                 return false;
         }
-        private bool check6(Bitmap img, int x, int y)
+        private bool check6(List<Pixel> pixels, Bitmap img, int x, int y)
         {
             Color c = img.GetPixel(x , y + 1);
             if (c == Color.FromArgb(0, 0, 0))
             {
+                Pixel newPixel = new Pixel();
+                newPixel.setX(x);
+                newPixel.setY(y+1);
+                pixels.Add(newPixel);
                 return true;
             }
             else
                 return false;
         }
-        private bool check7(Bitmap img, int x, int y)
+        private bool check7(List<Pixel> pixels, Bitmap img, int x, int y)
         {
             Color c = img.GetPixel(x + 1, y + 1);
             if (c == Color.FromArgb(0, 0, 0))
             {
+                 Pixel newPixel = new Pixel();
+                newPixel.setX(x+1);
+                newPixel.setY(y+1);
+                pixels.Add(newPixel);
                 return true;
             }
             else
                 return false;
         }
-        private bool check0(Bitmap img, int x, int y)
+        private bool check0(List<Pixel> pixels, Bitmap img, int x, int y)
         {
             Color c = img.GetPixel(x + 1, y);
             if (c == Color.FromArgb(0, 0, 0))
             {
+                Pixel newPixel = new Pixel();
+                newPixel.setX(x+1);
+                newPixel.setY(y);
+                pixels.Add(newPixel);
                 return true;
             }
             else
