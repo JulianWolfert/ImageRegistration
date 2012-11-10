@@ -300,78 +300,6 @@ namespace ImageRegistrationConsole
                         }
 
                         testbmp.Save("C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures\\test.png");
-                        //while (startPixel.getX() != nextPixel.getX() && startPixel.getY() != nextPixel.getX())
-                        //{
-                        //    Dictionary<Pixel, int> newValues = new Dictionary<Pixel, int>();
-                        //    newValues = searchNextPixel(contourPixel, img, startPixel, direction);
-
-                        //    foreach (KeyValuePair<Pixel, int> t in newValues)
-                        //    {
-                        //        nextPixel = t.Key;
-                        //        contourPixel.Add(nextPixel);
-                        //        direction = t.Value;
-                        //    }
-                        //}
-
-
-                        //while (startPixel.getX() != nextPixel.getX() && startPixel.getY() != nextPixel.getX())
-                        //{
-                        //    nextPixel
-                        //    nextPixel = searchNextPixel(img, startPixel, (direction-2 % 8));
-                        //}
-
-                        //Pixel workPixel = new Pixel();
-                        //while (startPixel.getX() != workPixel.getX() && startPixel.getY() != workPixel.getX())
-                        //{
-                        //    if (img.GetPixel(j-1,i) == Color.FromArgb(0,0,0))
-                        //    {
-                        //        workPixel.setX(j-1);
-                        //        workPixel.setY(i);
-                        //        continue;
-                        //    }
-                        //    if (img.GetPixel(j-1,i+1) == Color.FromArgb(0,0,0))
-                        //    {
-                        //        workPixel.setX(j-1);
-                        //        workPixel.setY(i+1);
-                        //        continue;
-                        //    }
-                        //    if (img.GetPixel(j, i+1) == Color.FromArgb(0, 0, 0))
-                        //    {
-                        //        workPixel.setX(j);
-                        //        workPixel.setY(i+1);
-                        //        continue;
-                        //    }
-                        //    if (img.GetPixel(j+1, i+1) == Color.FromArgb(0, 0, 0))
-                        //    {
-                        //        workPixel.setX(j+1);
-                        //        workPixel.setY(i+1);
-                        //        continue;
-                        //    }
-                        //    if (img.GetPixel(j+1, i) == Color.FromArgb(0, 0, 0))
-                        //    {
-                        //        workPixel.setX(j+1);
-                        //        workPixel.setY(i);
-                        //        continue;
-                        //    }
-                        //    if (img.GetPixel(j+1, i-1) == Color.FromArgb(0, 0, 0))
-                        //    {
-                        //        workPixel.setX(j+1);
-                        //        workPixel.setY(i-1);
-                        //        continue;
-                        //    }
-                        //    if (img.GetPixel(j, i-1) == Color.FromArgb(0, 0, 0))
-                        //    {
-                        //        workPixel.setX(j);
-                        //        workPixel.setY(i-1);
-                        //        continue;
-                        //    }
-                        //    if (img.GetPixel(j-1, i-1) == Color.FromArgb(0, 0, 0))
-                        //    {
-                        //        workPixel.setX(j-1);
-                        //        workPixel.setY(i-1);
-                        //        continue;
-                        //    }
-                        //}
 
                     }
 
@@ -383,524 +311,98 @@ namespace ImageRegistrationConsole
         }
         private int searchNextPixel(List<Pixel> pixels, Bitmap img, int direction)
         {
-            Pixel nextPixel = new Pixel();
-            int x = pixels[pixels.Count - 1].getX();
-            int y = pixels[pixels.Count - 1].getY();
-
             if (direction == 4)
             {
-                //Richtung 4
-                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                if (img.GetPixel(x + 1, y) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                //Richtung 2
-                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                if (img.GetPixel(x, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                //Richtung 0
-                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                if (img.GetPixel(x - 1, y) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                //Richtung 6
-                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                if (img.GetPixel(x, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-
-
-            }
-            if (direction == 2)
-            {
-                //Richtung 2
-                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                if (img.GetPixel(x, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                //Richtung 0
-                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                if (img.GetPixel(x - 1, y) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                //Richtung 6
-                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                if (img.GetPixel(x, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                //Richtung 4
-                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                if (img.GetPixel(x + 1, y) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-
-            }
-            if (direction == 6)
-            {
-                //Richtung 6
-                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                if (img.GetPixel(x, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                //Richtung 4
-                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                if (img.GetPixel(x + 1, y) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                //Richtung 2
-                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                if (img.GetPixel(x, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                //Richtung 0
-                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                if (img.GetPixel(x - 1, y) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-            }
-            if (direction == 0)
-            {
-                //Richtung 0
-                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                if (img.GetPixel(x - 1, y) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                //Richtung 6
-                if (img.GetPixel(x - 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 0;
-                    }
-                }
-                if (img.GetPixel(x, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                //Richtung 4
-                if (img.GetPixel(x + 1, y - 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y - 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 6;
-                    }
-                }
-                if (img.GetPixel(x + 1, y) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                //Richtung 2
-                if (img.GetPixel(x + 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x + 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 4;
-                    }
-                }
-                if (img.GetPixel(x, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-                if (img.GetPixel(x - 1, y + 1) == Color.FromArgb(0, 0, 0))
-                {
-                    nextPixel.setX(x - 1);
-                    nextPixel.setY(y + 1);
-                    if (!pixels.Contains(nextPixel))
-                    {
-                        pixels.Add(nextPixel);
-                        return 2;
-                    }
-                }
-            }
-
+                if (check5) return
             return -1;
         }
+
+
+        private bool check1(Bitmap img, int x, int y)
+        {
+            Color c = img.GetPixel(x + 1, y - 1);
+            if (c == Color.FromArgb(0, 0, 0))
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+        private int check2(List<Pixel> pixels, Bitmap img, int x, int y)
+        {
+            Color c = img.GetPixel(x, y - 1);
+            if (c == Color.FromArgb(0, 0, 0))
+            {
+                Pixel newPixel = new Pixel();
+                newPixel.setX(x);
+                newPixel.setY(y-1);
+                pixels.Add(newPixel);
+                return true;
+            }
+            else
+                return false;
+        }
+        private bool check3(Bitmap img, int x, int y)
+        {
+            Color c = img.GetPixel(x - 1, y - 1);
+            if (c == Color.FromArgb(0, 0, 0))
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+        private bool check4(Bitmap img, int x, int y)
+        {
+            Color c = img.GetPixel(x - 1, y);
+            if (c == Color.FromArgb(0, 0, 0))
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+        private bool check5(Bitmap img, int x, int y)
+        {
+            Color c = img.GetPixel(x - 1, y + 1);
+            if (c == Color.FromArgb(0, 0, 0))
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+        private bool check6(Bitmap img, int x, int y)
+        {
+            Color c = img.GetPixel(x , y + 1);
+            if (c == Color.FromArgb(0, 0, 0))
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+        private bool check7(Bitmap img, int x, int y)
+        {
+            Color c = img.GetPixel(x + 1, y + 1);
+            if (c == Color.FromArgb(0, 0, 0))
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+        private bool check0(Bitmap img, int x, int y)
+        {
+            Color c = img.GetPixel(x + 1, y);
+            if (c == Color.FromArgb(0, 0, 0))
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+
 
     }
 }

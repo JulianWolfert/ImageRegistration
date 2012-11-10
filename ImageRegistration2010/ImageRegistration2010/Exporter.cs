@@ -27,11 +27,11 @@ namespace ImageRegistration2010
         }
 
         internal void exportToImage(List<Contour<Point>> contourPixel_image, string outputfolder, string filename, int height, int width)
-        {         
+        {      
             
             Bitmap newbmp = new Bitmap(width, height);
 
-            for (int i = 0; i < contourPixel_image.Count; i++)
+            for (int i = 0; i < contourPixel_image.Count-1; i++)
             {
                 Point[] points = contourPixel_image[i].ToArray();
                 for (int k = 0; k < points.Length; k++)
