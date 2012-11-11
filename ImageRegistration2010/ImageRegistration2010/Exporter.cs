@@ -28,17 +28,16 @@ namespace ImageRegistration2010
 
         internal void exportToImage(List<Contour<Point>> contourPixel_image, string outputfolder, string filename, int height, int width)
         {      
-            
             Bitmap newbmp = new Bitmap(width, height);
 
-            for (int i = 0; i < contourPixel_image.Count-1; i++)
-            {
-                Point[] points = contourPixel_image[i].ToArray();
+            //for (int i = 0; i < contourPixel_image.Count-1; i++)
+           // {
+                Point[] points = contourPixel_image[0].ToArray();
                 for (int k = 0; k < points.Length; k++)
                 {
                     newbmp.SetPixel(points[k].X, points[k].Y, Color.FromArgb(0, 0, 0));
                 }
-            }
+           // }
 
 
 

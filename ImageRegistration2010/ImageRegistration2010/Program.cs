@@ -49,6 +49,7 @@ namespace ImageRegistrationConsole
         {
             ImageProcessor imageProcessor = new ImageProcessor();
             Exporter exporter = new Exporter();
+            RegistrationProcessor registrationProcessor = new RegistrationProcessor();
 
 
             ////Erstelle Grauwertbild von A und speichere ab
@@ -76,7 +77,8 @@ namespace ImageRegistrationConsole
             //exporter.exportToCSV(contours_image2, outputfolder, "contourB.csv");
             exporter.exportToImage(contours_image2, outputfolder, "contourB.png", B.Height, B.Width);
 
-
+            registrationProcessor.registration(contours_image1, contours_image2);
+           
         }
     }
 }

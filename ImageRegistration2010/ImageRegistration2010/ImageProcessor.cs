@@ -17,7 +17,7 @@ namespace ImageRegistrationConsole
     class ImageProcessor
     {
         //Filteroptions
-        public bool noiseFilter = false;
+        public bool noiseFilter = true;
         public bool filterContoursBySize = false;
 
         //Parameters
@@ -30,10 +30,7 @@ namespace ImageRegistrationConsole
         public bool blur = false;
         public int adaptiveThresholdBlockSize = 4;
         public double adaptiveThresholdParameter = 1.2d;
-        public bool addCanny = true;
-
-        public Image<Gray, byte> binarizedFrame;
-        public Image<Gray, byte> cannyFrame = null;
+        public bool addCanny = false;
 
 
 
@@ -112,37 +109,24 @@ namespace ImageRegistrationConsole
         //Erstelle Binärbild mit Otsu-Threshold
         public Bitmap createBinaryOtsu(Bitmap img)
         {
+            Image<Hsv, Byte> hsvImage = new Image<Hsv, byte>(img);
+            
+            Image<Gray, Byte> grayImage = new Image<Gray, Byte>(hsvImage.ToBitmap());
 
-            Image<Gray, Byte> grayFrame = new Image<Gray, byte>(img);
+            //grayImage = grayImage.PyrDown();
+            //grayImage = grayImage.PyrUp();
+            grayImage = grayImage.PyrDown();
+            grayImage = grayImage.PyrUp();
 
-            if (equalizeHist)
-                grayFrame._EqualizeHist();//autocontrast
-            //smoothed
-            Image<Gray, byte> smoothedGrayFrame = grayFrame.PyrDown();
-            smoothedGrayFrame = smoothedGrayFrame.PyrUp();
-            //canny
-            if (noiseFilter)
-                this.cannyFrame = smoothedGrayFrame.Canny(cannyThreshold, cannyThreshold);
-            //smoothing
-            if (blur)
-                grayFrame = smoothedGrayFrame;
-            //binarize
-            CvInvoke.cvAdaptiveThreshold(grayFrame, grayFrame, 255, Emgu.CV.CvEnum.ADAPTIVE_THRESHOLD_TYPE.CV_ADAPTIVE_THRESH_MEAN_C, Emgu.CV.CvEnum.THRESH.CV_THRESH_BINARY, adaptiveThresholdBlockSize + adaptiveThresholdBlockSize % 2 + 1, adaptiveThresholdParameter);
-            //
-            grayFrame._Not();
-            //
-            if (addCanny)
-                if (this.cannyFrame != null)
-                    grayFrame._Or(this.cannyFrame);
-            //
-            this.binarizedFrame = grayFrame;
+            //grayImage = grayImage.Canny(1, 3);
 
-            //dilate canny contours for filtering
-            if (this.cannyFrame != null)
-                this.cannyFrame = this.cannyFrame.Dilate(3);
+            CvInvoke.cvThreshold(grayImage, grayImage, 1, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
+            //CvInvoke.cvAdaptiveThreshold(grayImage, grayImage, 255, Emgu.CV.CvEnum.ADAPTIVE_THRESHOLD_TYPE.CV_ADAPTIVE_THRESH_MEAN_C, Emgu.CV.CvEnum.THRESH.CV_THRESH_BINARY, adaptiveThresholdBlockSize + adaptiveThresholdBlockSize % 2 + 1, adaptiveThresholdParameter);
 
+            CvInvoke.cvSmooth(grayImage, grayImage, SMOOTH_TYPE.CV_MEDIAN, 3, 3, 0, 0);
+         
 
-            return grayFrame.ToBitmap();
+            return grayImage.ToBitmap();
         }
 
         //Erstelle Contur
@@ -153,10 +137,20 @@ namespace ImageRegistrationConsole
             //find contours
             var sourceContours = grayFrame.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
             //filter contours
-            List<Contour<Point>> contours  = FilterContours(sourceContours, this.cannyFrame, grayFrame.Width, grayFrame.Height);
+            List<Contour<Point>> contours  = FilterContours(sourceContours, grayFrame, grayFrame.Width, grayFrame.Height);
 
+            List<Contour<Point>> onlyMaxContour = new List<Contour<Point>>();
 
-            return contours;
+            int maxcontour = 0;
+            for (int i = 1; i < contours.Count - 1; i++)
+            {
+                if (contours[i].ToArray().Length > contours[maxcontour].ToArray().Length)
+                    maxcontour = i;
+            }
+
+            onlyMaxContour.Add(contours[maxcontour]);
+
+            return onlyMaxContour;
 
 
         }
