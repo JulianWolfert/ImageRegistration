@@ -17,7 +17,7 @@ namespace ImageRegistrationConsole
     class ImageProcessor
     {
         //Filteroptions
-        public bool noiseFilter = true;
+        public bool noiseFilter =  true;
         public bool filterContoursBySize = false;
 
         //Parameters
