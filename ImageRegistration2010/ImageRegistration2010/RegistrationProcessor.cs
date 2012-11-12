@@ -14,7 +14,7 @@ namespace ImageRegistration2010
         public bool registration(List<Contour<Point>> contours_image1, List<Contour<Point>> contours_image2)
         {
 
-            Point[] points = contours_image1[0].ToArray();
+            Point[] points  = contours_image1[0].ToArray();
 
             Dictionary<int,double> angle_at_pixel = new Dictionary<int,double>();
 
