@@ -16,8 +16,8 @@ namespace ImageRegistrationConsole
         static void Main(string[] args)
         {
             Console.WriteLine("######## IMAGE-REGISTRATION V1.0 ########\n");
-            String folderPath = "C:\\Users\\Jules\\Documents\\Medizinische Bildverarbeitung\\Pictures";
-            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
+            //String folderPath = "C:\\Users\\Jules\\Documents\\Medizinische Bildverarbeitung\\Pictures";
+            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
             DirectoryInfo dir = new DirectoryInfo(folderPath);
             Console.WriteLine("Lade Bilder aus dem Verzeichnis: " + folderPath);
             int count = dir.GetFiles().Count();
@@ -71,13 +71,14 @@ namespace ImageRegistrationConsole
 
             List<Contour<Point>> contours_image1 = imageProcessor.findContoursWithOpenCV(image1bin);
             //exporter.exportToCSV(contours_image1, outputfolder, "contourA.csv");
-            exporter.exportToImage(contours_image1, outputfolder, "contourA.png", A.Height, A.Width);
+            Bitmap contour_image1 = exporter.exportToImage(contours_image1, outputfolder, "contourA.png", A.Height, A.Width);
 
             List<Contour<Point>> contours_image2 = imageProcessor.findContoursWithOpenCV(image2bin);
             //exporter.exportToCSV(contours_image2, outputfolder, "contourB.csv");
-            exporter.exportToImage(contours_image2, outputfolder, "contourB.png", B.Height, B.Width);
+            Bitmap contour_image2 = exporter.exportToImage(contours_image2, outputfolder, "contourB.png", B.Height, B.Width);
 
             registrationProcessor.registration(contours_image1, contours_image2);
+
            
         }
     }

@@ -26,7 +26,7 @@ namespace ImageRegistration2010
             }
         }
 
-        internal void exportToImage(List<Contour<Point>> contourPixel_image, string outputfolder, string filename, int height, int width)
+        internal Bitmap exportToImage(List<Contour<Point>> contourPixel_image, string outputfolder, string filename, int height, int width)
         {      
             Bitmap newbmp = new Bitmap(width, height);
 
@@ -39,9 +39,10 @@ namespace ImageRegistration2010
                 }
            // }
 
-
-
+            
             newbmp.Save(outputfolder + "\\" + filename, ImageFormat.Png);
+
+            return newbmp;
         }
     }
 }
