@@ -39,11 +39,13 @@ namespace ImageRegistration2010
 
         private double calculateAngle(Point[] points, int point)
         {
-            float[] xdata_line1 = new float[10];
-            float[] ydata_line1 = new float[10];
+            int next_neighbours = 4;
+
+            float[] xdata_line1 = new float[next_neighbours];
+            float[] ydata_line1 = new float[next_neighbours];
 
             int n=0;
-            for (int i=point-10; i < point; i++)
+            for (int i=point-next_neighbours; i < point; i++)
             {
                 if (i < 0)
                 {
@@ -60,10 +62,10 @@ namespace ImageRegistration2010
             Line line1 = linearRegression(xdata_line1,ydata_line1);
 
 
-            float[] xdata_line2 = new float[10];
-            float[] ydata_line2 = new float[10];
+            float[] xdata_line2 = new float[next_neighbours];
+            float[] ydata_line2 = new float[next_neighbours];
             n=0;
-            for (int i=point+10; i > point; i--)
+            for (int i=point+next_neighbours; i > point; i--)
             {
                 if (i > points.Length-1)
                 {
@@ -81,7 +83,7 @@ namespace ImageRegistration2010
             Line line2 = linearRegression(xdata_line2, ydata_line2);
 
 
-            double angle = Math.Round(line1.calculateAngel(line2),2);
+            double angle = Math.Round(line1.calculateAngel(line2),0);
             
             return angle;
         }
