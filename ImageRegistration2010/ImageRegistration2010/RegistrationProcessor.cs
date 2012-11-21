@@ -1,15 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Emgu.CV;
+using Emgu.CV.Structure;
 using System.Drawing;
 using MathNet.Numerics.LinearAlgebra.Single;
-using System.Diagnostics;
-using Emgu.CV.Structure;
+
 
 namespace ImageRegistration2010
 {
+
+    public struct Coordinates
+    {
+        public double x, y;
+
+        public Coordinates(double p1, double p2)
+        {
+            x = p1;
+            y = p2;
+        }
+
+    }
     class RegistrationProcessor
     {
 
@@ -108,59 +118,93 @@ namespace ImageRegistration2010
 
         private double calculateAngle(Point[] points, int point)
         {
-            int next_neighbours = 10;
+            int next_neighbours = 50;
 
-            float[] xdata_line1 = new float[next_neighbours+1];
-            float[] ydata_line1 = new float[next_neighbours+1];
+            float[] xdata_line_back = new float[next_neighbours+1];
+            float[] ydata_line_back = new float[next_neighbours+1];
 
-            xdata_line1[0] = points[point].X;
-            ydata_line1[0] = points[point].Y;
+            xdata_line_back[0] = points[point].X;
+            ydata_line_back[0] = points[point].Y;
 
             int n=1;
             for (int i=point-next_neighbours; i < point; i++)
             {
                 if (i < 0)
                 {
-                    xdata_line1[n] = points[i + (points.Length)].X;
-                    ydata_line1[n] = points[i + (points.Length)].Y;
+                    xdata_line_back[n] = points[i + (points.Length)].X;
+                    ydata_line_back[n] = points[i + (points.Length)].Y;
                 }
                 else
                 {
-                    xdata_line1[n] = points[i].X;
-                    ydata_line1[n] = points[i].Y;
+                    xdata_line_back[n] = points[i].X;
+                    ydata_line_back[n] = points[i].Y;
                 }
                 n++;
             }
-            Line line1 = linearRegression(xdata_line1,ydata_line1);
+            Line line_back = linearRegression(xdata_line_back,ydata_line_back);
 
 
-            float[] xdata_line2 = new float[next_neighbours+1];
-            float[] ydata_line2 = new float[next_neighbours+1];
+            float[] xdata_line_for = new float[next_neighbours+1];
+            float[] ydata_line_for = new float[next_neighbours+1];
 
-            xdata_line2[0] = points[point].X;
-            ydata_line2[0] = points[point].Y;
+            xdata_line_for[0] = points[point].X;
+            ydata_line_for[0] = points[point].Y;
 
             n=1;
             for (int i=point+next_neighbours; i > point; i--)
             {
                 if (i > points.Length-1)
                 {
-                    xdata_line2[n] = points[i - (points.Length)].X;
-                    ydata_line2[n] = points[i - (points.Length)].Y;
+                    xdata_line_for[n] = points[i - (points.Length)].X;
+                    ydata_line_for[n] = points[i - (points.Length)].Y;
                 }
                 else
                 {
-                    xdata_line2[n] = points[i].X;
-                    ydata_line2[n] = points[i].Y;
+                    xdata_line_for[n] = points[i].X;
+                    ydata_line_for[n] = points[i].Y;
                 }
                 n++;
             }
-            Line line2 = linearRegression(xdata_line2, ydata_line2);
+            Line line_for = linearRegression(xdata_line_for, ydata_line_for);
+
+            Coordinates intersection = calculateIntersection(line_for,line_back);
+
+            System.Windows.Vector vector_for = findCorrectVector(line_for, intersection, xdata_line_for[0], ydata_line_for[0]);
+            System.Windows.Vector vector_back = findCorrectVector(line_back, intersection, xdata_line_back[0], ydata_line_back[0]);
+
+            return System.Windows.Vector.AngleBetween(vector_for, vector_back);
+
             
            
-            double angle = Math.Round(line1.calculateAngel(line2),2);
+            //double angle = Math.Round(line1.calculateAngel(line2),2);
             
-            return angle;
+            //return angle;
+        }
+
+        private System.Windows.Vector findCorrectVector(Line line, Coordinates intersection, float contour_x, float contour_y)
+        {
+            System.Windows.Vector refVector = new System.Windows.Vector(contour_x, contour_y) - new System.Windows.Vector(intersection.x, intersection.y);
+            
+            Coordinates line_plus_x = new Coordinates(intersection.x + 1,line.getB() * (intersection.x + 1) + line.getA());
+            System.Windows.Vector lineVector_plus = new System.Windows.Vector(line_plus_x.x, line_plus_x.y) - new System.Windows.Vector(intersection.x, intersection.y);
+
+            Coordinates line_minus_x = new Coordinates(intersection.x - 1, line.getB() * (intersection.x - 1) + line.getA());
+            System.Windows.Vector lineVector_minus = new System.Windows.Vector(line_minus_x.x, line_minus_x.y) - new System.Windows.Vector(intersection.x, intersection.y);
+
+            double angle1 = System.Windows.Vector.AngleBetween(lineVector_plus,refVector);
+            double angle2 = System.Windows.Vector.AngleBetween(refVector, lineVector_minus);
+
+            if (angle1 < angle2)
+                return lineVector_plus;
+            else
+                return lineVector_plus;
+        }
+
+        private Coordinates calculateIntersection(Line line_for, Line line_back)
+        {
+            double x = (line_back.getA() - line_for.getA()) / (line_for.getB() - line_back.getB());
+            double y = line_for.getB() * x + line_for.getA();
+            return (new Coordinates(x, y));
         }
 
         public Line linearRegression(float[] xdata, float[] ydata)
