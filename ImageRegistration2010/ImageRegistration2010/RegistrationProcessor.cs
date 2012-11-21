@@ -4,6 +4,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using System.Drawing;
 using MathNet.Numerics.LinearAlgebra.Single;
+using System.IO;
 
 
 namespace ImageRegistration2010
@@ -94,31 +95,44 @@ namespace ImageRegistration2010
 
             //Minimale Differenzberechnung von allen Pixeln
 
-            double min_diff = double.MaxValue;
-            int index_image1;
-            int index_image2;
-            for (int i = 0; i < pixelList_image1.Count; i++)
+            //double min_diff = double.MaxValue;
+            //int index_image1;
+            //int index_image2;
+            //for (int i = 0; i < pixelList_image1.Count; i++)
+            //{
+            //    for (int j = 0; j < pixelList_image2.Count; j++)
+            //    {
+            //        if (pixelList_image1[i].angle_at_pixel > 45 && pixelList_image2[j].angle_at_pixel > 45)
+            //        {
+            //            if (pixelList_image1[i].calculateDifference(pixelList_image2[j]) < min_diff)
+            //            {
+            //                min_diff = pixelList_image1[i].calculateDifference(pixelList_image2[j]);
+            //                index_image1 = i;
+            //                index_image2 = j;
+            //            }
+            //        }
+            //    }
+            //}
+
+            string aFileName = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung" + "\\" + "angles.csv";
+            FileStream aFileStream = new FileStream(aFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            StreamWriter m_StreamWriter = new StreamWriter(aFileStream);
+            for (int i = 0; i < angle_at_pixel_image1.Count; i++)
             {
-                for (int j = 0; j < pixelList_image2.Count; j++)
-                {
-                    if (pixelList_image1[i].angle_at_pixel > 45 && pixelList_image2[j].angle_at_pixel > 45)
-                    {
-                        if (pixelList_image1[i].calculateDifference(pixelList_image2[j]) < min_diff)
-                        {
-                            min_diff = pixelList_image1[i].calculateDifference(pixelList_image2[j]);
-                            index_image1 = i;
-                            index_image2 = j;
-                        }
-                    }
-                }
+                m_StreamWriter.Write(angle_at_pixel_image1[i].ToString());
+                m_StreamWriter.Write(";");
+                if (i < angle_at_pixel_image2.Count)
+                m_StreamWriter.Write(angle_at_pixel_image2[i].ToString());
+                m_StreamWriter.Write("\n");
             }
+
 
             return true;
         }
 
         private double calculateAngle(Point[] points, int point)
         {
-            int next_neighbours = 50;
+            int next_neighbours = 150;
 
             float[] xdata_line_back = new float[next_neighbours+1];
             float[] ydata_line_back = new float[next_neighbours+1];
@@ -169,16 +183,14 @@ namespace ImageRegistration2010
 
             Coordinates intersection = calculateIntersection(line_for,line_back);
 
-            System.Windows.Vector vector_for = findCorrectVector(line_for, intersection, xdata_line_for[0], ydata_line_for[0]);
-            System.Windows.Vector vector_back = findCorrectVector(line_back, intersection, xdata_line_back[0], ydata_line_back[0]);
+            System.Windows.Vector vector_for = findCorrectVector(line_for, intersection, xdata_line_for[1], ydata_line_for[1]);
+            System.Windows.Vector vector_back = findCorrectVector(line_back, intersection, xdata_line_back[1], ydata_line_back[1]);
 
-            return System.Windows.Vector.AngleBetween(vector_for, vector_back);
+            double angleBetween = System.Windows.Vector.AngleBetween(vector_for, vector_back);
 
-            
-           
             //double angle = Math.Round(line1.calculateAngel(line2),2);
             
-            //return angle;
+            return Math.Abs(angleBetween);
         }
 
         private System.Windows.Vector findCorrectVector(Line line, Coordinates intersection, float contour_x, float contour_y)
@@ -191,13 +203,17 @@ namespace ImageRegistration2010
             Coordinates line_minus_x = new Coordinates(intersection.x - 1, line.getB() * (intersection.x - 1) + line.getA());
             System.Windows.Vector lineVector_minus = new System.Windows.Vector(line_minus_x.x, line_minus_x.y) - new System.Windows.Vector(intersection.x, intersection.y);
 
-            double angle1 = System.Windows.Vector.AngleBetween(lineVector_plus,refVector);
-            double angle2 = System.Windows.Vector.AngleBetween(refVector, lineVector_minus);
+            double angle1 = Math.Abs(System.Windows.Vector.AngleBetween(refVector, lineVector_plus));
+            double angle2 = Math.Abs(System.Windows.Vector.AngleBetween(refVector, lineVector_minus));
+
+            ////double angle1 = System.Windows.Vector.AngleBetween(lineVector_plus,refVector);
+            //double angle1 = System.Windows.Vector.AngleBetween(refVector, lineVector_plus);
+            //double angle2 = System.Windows.Vector.AngleBetween(lineVector_minus, refVector);
 
             if (angle1 < angle2)
                 return lineVector_plus;
             else
-                return lineVector_plus;
+                return lineVector_minus;
         }
 
         private Coordinates calculateIntersection(Line line_for, Line line_back)
