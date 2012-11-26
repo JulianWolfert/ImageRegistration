@@ -11,6 +11,8 @@ namespace ImageRegistration2010
         public int translation_x {get; set;}
         public int translation_y { get; set; }
         public int scale { get; set; }
-        public int rotation { get; set; } 
+        public int rotation { get; set; }
+        public int rotation_center_x { get; set; }
+        public int rotation_center_y { get; set; }
     }
 }

@@ -72,7 +72,7 @@ namespace ImageRegistrationConsole
             Bitmap contour_image2 = exporter.exportToImage(contours_image2, outputfolder, "contourB.png", B.Height, B.Width);
 
             //Calculate transformation with help of the two contours
-            //Transformation t1 = registrationProcessor.calculateTransformation(contours_image1, contours_image2);
+            Transformation t1 = registrationProcessor.calculateTransformation(contours_image1, contours_image2);
 
             Transformation t = new Transformation();
             t.translation_x = 3;
@@ -80,12 +80,12 @@ namespace ImageRegistrationConsole
             t.rotation = 0;
 
             //Start registration of contours
-            Bitmap registrated_Contours = registrationProcessor.registrationContour(t, contour_image1, contour_image2);
-            //registrated_Contours.Save(outputfolder + "\\contoursR.png", ImageFormat.Png);
+            Bitmap registrated_Contours = registrationProcessor.registrationContour(t1, contour_image1, contour_image2);
+            registrated_Contours.Save(outputfolder + "\\contoursR.png", ImageFormat.Png);
 
             //Start registration of orginial images
-            Bitmap registrated_originals = registrationProcessor.registrationBitmap(t, A, B);
-            //registrated_originals.Save(outputfolder + "\\registration.png", ImageFormat.Png);
+            Bitmap registrated_originals = registrationProcessor.registrationBitmap(t1, A, B);
+            registrated_originals.Save(outputfolder + "\\registration.png", ImageFormat.Png);
 
 
 

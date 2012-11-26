@@ -78,6 +78,8 @@ namespace ImageRegistration2010
                 newFeature.angle_at_pixel = angle_at_pixel_image1[minima];
                 newFeature.angle_left = angle_at_pixel_image1[minima_left];
                 newFeature.angle_right = angle_at_pixel_image1[minima_right];
+                newFeature.pixel_to_next_left = minima - minima_left;
+                newFeature.pixel_to_next_right = minima_right - minima;
 
                 features1.Add(newFeature);
 
@@ -129,6 +131,8 @@ namespace ImageRegistration2010
                 newFeature.angle_at_pixel = angle_at_pixel_image2[minima];
                 newFeature.angle_left = angle_at_pixel_image2[minima_left];
                 newFeature.angle_right = angle_at_pixel_image2[minima_right];
+                newFeature.pixel_to_next_left = minima - minima_left;
+                newFeature.pixel_to_next_right = minima_right - minima;
 
                 features2.Add(newFeature);
 
@@ -207,18 +211,20 @@ namespace ImageRegistration2010
 
         private Transformation calculateTransformation(List<Feature> bestFeatures)
         {
-            int trans_x = bestFeatures[0].point.X - bestFeatures[1].point.Y;
+            int trans_x = bestFeatures[0].point.X - bestFeatures[1].point.X;
             int trans_y = bestFeatures[0].point.Y - bestFeatures[1].point.Y;
 
-            System.Windows.Vector vector1 = new System.Windows.Vector(bestFeatures[2].point.X, bestFeatures[2].point.Y) - new System.Windows.Vector(bestFeatures[0].point.X, bestFeatures[0].point.Y);
-            System.Windows.Vector vector2 = new System.Windows.Vector(bestFeatures[3].point.X, bestFeatures[3].point.Y) - new System.Windows.Vector(bestFeatures[0].point.X, bestFeatures[0].point.Y);
+            System.Windows.Vector vector1 = new System.Windows.Vector(bestFeatures[2].point.X, bestFeatures[2].point.Y) - new System.Windows.Vector(bestFeatures[0].point.X, bestFeatures[1].point.Y);
+            System.Windows.Vector vector2 = new System.Windows.Vector(bestFeatures[3].point.X, bestFeatures[3].point.Y) - new System.Windows.Vector(bestFeatures[0].point.X, bestFeatures[1].point.Y);
 
             double rotation_angle = System.Windows.Vector.AngleBetween(vector1, vector2);
 
             Transformation transformation = new Transformation();
             transformation.translation_x = trans_x;
             transformation.translation_y = trans_y;
-            transformation.rotation = Convert.ToInt32(rotation_angle);
+            transformation.rotation = Convert.ToInt32(rotation_angle)*-1;
+            transformation.rotation_center_x = bestFeatures[0].point.X;
+            transformation.rotation_center_y = bestFeatures[0].point.Y;
 
             return transformation;
         }
@@ -236,7 +242,7 @@ namespace ImageRegistration2010
             {
                 for (int j = 0; j < features2.Count; j++)
                 {
-                    double diff = features1[i].calculateDifference(features2[j]);
+                    double diff = features1[i].calculateDifferenceWithDistance(features2[j]);
                     if (diff < min_diff)
                     {
                         min_diff_2nd = min_diff;
@@ -451,11 +457,13 @@ namespace ImageRegistration2010
 
             Bitmap trans_image2 = new Bitmap(contour_image1.Width, contour_image1.Height);
             Graphics g = Graphics.FromImage(trans_image2);
-            g.TranslateTransform(t.translation_x, t.translation_y);
 
-            g.TranslateTransform((float)contour_image1.Width / 2, (float)contour_image1.Height / 2);
+
+            g.TranslateTransform((float)t.rotation_center_x, (float)t.rotation_center_y);
             g.RotateTransform(t.rotation);
-            g.TranslateTransform(-(float)contour_image1.Width / 2, -(float)contour_image1.Height / 2);
+            g.TranslateTransform(-(float)t.rotation_center_x, -(float)t.rotation_center_y);
+
+            g.TranslateTransform(t.translation_x, t.translation_y);
 
             g.DrawImage(contour_image2, new Point(0, 0));
 

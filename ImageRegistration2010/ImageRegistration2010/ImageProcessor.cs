@@ -47,19 +47,17 @@ namespace ImageRegistrationConsole
             
             Image<Gray, Byte> grayImage = new Image<Gray, Byte>(hsvImage.ToBitmap());
 
-            //grayImage = grayImage.PyrDown();
-            //grayImage = grayImage.PyrUp();
-            //grayImage = grayImage.PyrDown();
-            //grayImage = grayImage.PyrUp();
+            grayImage = grayImage.PyrDown();
+            grayImage = grayImage.PyrUp();
+            grayImage = grayImage.PyrDown();
+            grayImage = grayImage.PyrUp();
 
             CvInvoke.cvSmooth(grayImage, grayImage, SMOOTH_TYPE.CV_GAUSSIAN, 13,13,0,0);
 
-            grayImage = grayImage.Canny(10, 30);
+            //grayImage = grayImage.Canny(1, 1);
 
             CvInvoke.cvThreshold(grayImage, grayImage, 1, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
             //CvInvoke.cvAdaptiveThreshold(grayImage, grayImage, 255, Emgu.CV.CvEnum.ADAPTIVE_THRESHOLD_TYPE.CV_ADAPTIVE_THRESH_MEAN_C, Emgu.CV.CvEnum.THRESH.CV_THRESH_BINARY, adaptiveThresholdBlockSize + adaptiveThresholdBlockSize % 2 + 1, adaptiveThresholdParameter);
-
-            CvInvoke.cvErode(grayImage, grayImage, grayImage, 4);
 
 
             return grayImage.ToBitmap();
