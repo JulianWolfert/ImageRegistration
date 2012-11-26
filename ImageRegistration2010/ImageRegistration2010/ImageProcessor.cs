@@ -17,20 +17,20 @@ namespace ImageRegistrationConsole
     class ImageProcessor
     {
         //Filteroptions
-        public bool noiseFilter =  true;
-        public bool filterContoursBySize = false;
+        private bool noiseFilter =  true;
+        private bool filterContoursBySize = false;
 
         //Parameters
-        public int minContourLength = 10;
-        public int minContourArea = 10;
-        public double minFormFactor = 0.5;
-        public int cannyThreshold = 10;
+        private int minContourLength = 10;
+        private int minContourArea = 10;
+        private double minFormFactor = 0.5;
+        private int cannyThreshold = 10;
 
-        public bool equalizeHist = false;
-        public bool blur = false;
-        public int adaptiveThresholdBlockSize = 4;
-        public double adaptiveThresholdParameter = 1.2d;
-        public bool addCanny = false;
+        private bool equalizeHist = false;
+        private bool blur = false;
+        private int adaptiveThresholdBlockSize = 4;
+        private double adaptiveThresholdParameter = 1.2d;
+        private bool addCanny = false;
 
 
 
@@ -39,7 +39,92 @@ namespace ImageRegistrationConsole
 
         }
 
-        //Grauwertbild erzeugen - Version 1
+
+        //Create binary image with otsu threshold
+        public Bitmap createBinaryOtsu(Bitmap img)
+        {
+            Image<Hsv, Byte> hsvImage = new Image<Hsv, byte>(img);
+            
+            Image<Gray, Byte> grayImage = new Image<Gray, Byte>(hsvImage.ToBitmap());
+
+            //grayImage = grayImage.PyrDown();
+            //grayImage = grayImage.PyrUp();
+            //grayImage = grayImage.PyrDown();
+            //grayImage = grayImage.PyrUp();
+
+            CvInvoke.cvSmooth(grayImage, grayImage, SMOOTH_TYPE.CV_GAUSSIAN, 13,13,0,0);
+
+            grayImage = grayImage.Canny(10, 30);
+
+            CvInvoke.cvThreshold(grayImage, grayImage, 1, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
+            //CvInvoke.cvAdaptiveThreshold(grayImage, grayImage, 255, Emgu.CV.CvEnum.ADAPTIVE_THRESHOLD_TYPE.CV_ADAPTIVE_THRESH_MEAN_C, Emgu.CV.CvEnum.THRESH.CV_THRESH_BINARY, adaptiveThresholdBlockSize + adaptiveThresholdBlockSize % 2 + 1, adaptiveThresholdParameter);
+
+            CvInvoke.cvErode(grayImage, grayImage, grayImage, 4);
+
+
+            return grayImage.ToBitmap();
+        }
+
+        //Create contour
+        public List<Contour<Point>> findContoursWithOpenCV(Bitmap img)
+        {
+            Image<Gray, Byte> grayFrame = new Image<Gray, byte>(img);
+
+            //find contours
+            var sourceContours = grayFrame.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
+            //filter contours
+            List<Contour<Point>> contours  = FilterContours(sourceContours, grayFrame, grayFrame.Width, grayFrame.Height);
+
+            List<Contour<Point>> onlyMaxContour = new List<Contour<Point>>();
+
+            int maxcontour = 0;
+            for (int i = 1; i < contours.Count - 1; i++)
+            {
+                if (contours[i].ToArray().Length > contours[maxcontour].ToArray().Length)
+                    maxcontour = i;
+            }
+
+            onlyMaxContour.Add(contours[maxcontour]);
+
+            return onlyMaxContour;
+
+
+        }
+        
+        //Utilfunction for filter contours
+        private List<Contour<Point>> FilterContours(Contour<Point> contours, Image<Gray, byte> cannyFrame, int frameWidth, int frameHeight)
+        {
+            int maxArea = frameWidth * frameHeight / 5;
+            var c = contours;
+            List<Contour<Point>> result = new List<Contour<Point>>();
+            while (c != null)
+            {
+                if (filterContoursBySize)
+                    if (c.Total < minContourLength ||
+                        c.Area < minContourArea || c.Area > maxArea ||
+                        c.Area / c.Total <= minFormFactor)
+                        goto next;
+
+                if (noiseFilter)
+                {
+                    Point p1 = c[0];
+                    Point p2 = c[(c.Total / 2) % c.Total];
+                    if (cannyFrame[p1].Intensity <= double.Epsilon && cannyFrame[p2].Intensity <= double.Epsilon)
+                        goto next;
+                }
+                result.Add(c);
+
+            next:
+                c = c.HNext;
+            }
+
+            return result;
+        }
+
+
+        //Not used
+
+        //Create grayscale image - Version 1
         public Bitmap createGreyImage(Bitmap img)
         {
 
@@ -47,7 +132,7 @@ namespace ImageRegistrationConsole
 
             //make an empty bitmap the same size as original
             Bitmap newBitmap = new Bitmap(original.Width, original.Height);
-             
+
             for (int i = 0; i < original.Width; i++)
             {
                 for (int j = 0; j < original.Height; j++)
@@ -69,8 +154,7 @@ namespace ImageRegistrationConsole
 
             return newBitmap;
         }
-
-        //Grauwertbild erzeugen - Version 2
+        //Create grayscale image - Version 2
         public Bitmap MakeGrayscale(Bitmap img)
         {
             //create a blank bitmap the same size as original
@@ -106,84 +190,6 @@ namespace ImageRegistrationConsole
             return newBitmap;
         }
         
-        //Erstelle Binärbild mit Otsu-Threshold
-        public Bitmap createBinaryOtsu(Bitmap img)
-        {
-            Image<Hsv, Byte> hsvImage = new Image<Hsv, byte>(img);
-            
-            Image<Gray, Byte> grayImage = new Image<Gray, Byte>(hsvImage.ToBitmap());
-
-            //grayImage = grayImage.PyrDown();
-            //grayImage = grayImage.PyrUp();
-            grayImage = grayImage.PyrDown();
-            grayImage = grayImage.PyrUp();
-
-            //grayImage = grayImage.Canny(1, 3);
-
-            CvInvoke.cvThreshold(grayImage, grayImage, 1, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
-            //CvInvoke.cvAdaptiveThreshold(grayImage, grayImage, 255, Emgu.CV.CvEnum.ADAPTIVE_THRESHOLD_TYPE.CV_ADAPTIVE_THRESH_MEAN_C, Emgu.CV.CvEnum.THRESH.CV_THRESH_BINARY, adaptiveThresholdBlockSize + adaptiveThresholdBlockSize % 2 + 1, adaptiveThresholdParameter);
-
-            CvInvoke.cvSmooth(grayImage, grayImage, SMOOTH_TYPE.CV_MEDIAN, 3, 3, 0, 0);
-         
-
-            return grayImage.ToBitmap();
-        }
-
-        //Erstelle Contur
-        public List<Contour<Point>> findContoursWithOpenCV(Bitmap img)
-        {
-            Image<Gray, Byte> grayFrame = new Image<Gray, byte>(img);
-
-            //find contours
-            var sourceContours = grayFrame.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
-            //filter contours
-            List<Contour<Point>> contours  = FilterContours(sourceContours, grayFrame, grayFrame.Width, grayFrame.Height);
-
-            List<Contour<Point>> onlyMaxContour = new List<Contour<Point>>();
-
-            int maxcontour = 0;
-            for (int i = 1; i < contours.Count - 1; i++)
-            {
-                if (contours[i].ToArray().Length > contours[maxcontour].ToArray().Length)
-                    maxcontour = i;
-            }
-
-            onlyMaxContour.Add(contours[maxcontour]);
-
-            return onlyMaxContour;
-
-
-        }
-        private List<Contour<Point>> FilterContours(Contour<Point> contours, Image<Gray, byte> cannyFrame, int frameWidth, int frameHeight)
-        {
-            int maxArea = frameWidth * frameHeight / 5;
-            var c = contours;
-            List<Contour<Point>> result = new List<Contour<Point>>();
-            while (c != null)
-            {
-                if (filterContoursBySize)
-                    if (c.Total < minContourLength ||
-                        c.Area < minContourArea || c.Area > maxArea ||
-                        c.Area / c.Total <= minFormFactor)
-                        goto next;
-
-                if (noiseFilter)
-                {
-                    Point p1 = c[0];
-                    Point p2 = c[(c.Total / 2) % c.Total];
-                    if (cannyFrame[p1].Intensity <= double.Epsilon && cannyFrame[p2].Intensity <= double.Epsilon)
-                        goto next;
-                }
-                result.Add(c);
-
-            next:
-                c = c.HNext;
-            }
-
-            return result;
-        }
-
-
 
         //Not Working properly
         private int findNextPixel(List<Pixel> contourPixel, Bitmap img, int direction)
@@ -205,7 +211,7 @@ namespace ImageRegistrationConsole
 
             return 0;
         }
-        public List<Pixel> findContour(Bitmap img)
+        private List<Pixel> findContour(Bitmap img)
         {
             List<Pixel> contourPixel = new List<Pixel>();
 
@@ -300,7 +306,6 @@ namespace ImageRegistrationConsole
             }
             return -1;
         }
-
 
         private bool check1(List<Pixel> pixels, Bitmap img, int x, int y)
         {
