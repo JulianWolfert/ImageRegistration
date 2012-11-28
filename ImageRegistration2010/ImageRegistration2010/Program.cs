@@ -15,9 +15,14 @@ namespace ImageRegistrationConsole
     {
         static void Main(string[] args)
         {
+
             Console.WriteLine("######## IMAGE-REGISTRATION V1.0 ########\n");
-            //String folderPath = "C:\\Users\\Jules\\Documents\\Medizinische Bildverarbeitung\\Pictures";
-            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
+            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
+            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\mbvMA\\Pairs";
+
+            if (args.Length != 0)
+                folderPath = args[0];
+
             DirectoryInfo dir = new DirectoryInfo(folderPath);
             Console.WriteLine("Lade Bilder aus dem Verzeichnis: " + folderPath);
             int count = dir.GetFiles().Count();
@@ -63,7 +68,7 @@ namespace ImageRegistrationConsole
 
             //Find contour of A - Only longest!
             List<Contour<Point>> contours_image1 = imageProcessor.findContoursWithOpenCV(image1bin);
-            //exporter.exportToCSV(contours_image1, outputfolder, "contourA.csv");
+           // exporter.exportToCSV(contours_image1, outputfolder, "contourA.csv");
             Bitmap contour_image1 = exporter.exportToImage(contours_image1, outputfolder, "contourA.png", A.Height, A.Width);
 
             //Find contour of B - Only longest!
@@ -73,11 +78,6 @@ namespace ImageRegistrationConsole
 
             //Calculate transformation with help of the two contours
             Transformation t1 = registrationProcessor.calculateTransformation(contours_image1, contours_image2);
-
-            Transformation t = new Transformation();
-            t.translation_x = 3;
-            t.translation_y = 0;
-            t.rotation = 0;
 
             //Start registration of contours
             Bitmap registrated_Contours = registrationProcessor.registrationContour(t1, contour_image1, contour_image2);

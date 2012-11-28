@@ -27,7 +27,7 @@ namespace ImageRegistration2010
         //Next neighbours for linear regression
         private int next_neighbours_regression = 100;
         //Lenght of the segment for finding the minima
-        private int feature_intervall = 50;
+        private int feature_intervall = 100;
 
 
         public Transformation calculateTransformation(List<Contour<Point>> contours_image1, List<Contour<Point>> contours_image2)
@@ -55,21 +55,29 @@ namespace ImageRegistration2010
                 int minima = minima_index_contour1[i];
                 int minima_left = 0;
                 int minima_right = 0;
+                int pixel_to_next_left = 0;
+                int pixel_to_next_right = 0;
 
                 if (i == 0)
                 {
                     minima_right = minima_index_contour1[i+1];
                     minima_left = minima_index_contour1[minima_index_contour1.Count - 1];
+                    pixel_to_next_right = minima_right - minima;
+                    pixel_to_next_left = (angle_at_pixel_image1.Count - minima_left) + minima; 
                 }
                 if (i == minima_index_contour1.Count - 1)
                 {
                     minima_right = minima_index_contour1[0];
                     minima_left = minima_index_contour1[i - 1];
+                    pixel_to_next_right = (angle_at_pixel_image1.Count - minima) + minima_right;
+                    pixel_to_next_left = minima - minima_left;
                 }
                 if (i != 0 && i != (minima_index_contour1.Count - 1))
                 {
                     minima_right = minima_index_contour1[i + 1];
                     minima_left = minima_index_contour1[i - 1];
+                    pixel_to_next_left = minima - minima_left;
+                    pixel_to_next_right = minima_right - minima;
                 }
 
                 Feature newFeature = new Feature();
@@ -78,8 +86,8 @@ namespace ImageRegistration2010
                 newFeature.angle_at_pixel = angle_at_pixel_image1[minima];
                 newFeature.angle_left = angle_at_pixel_image1[minima_left];
                 newFeature.angle_right = angle_at_pixel_image1[minima_right];
-                newFeature.pixel_to_next_left = minima - minima_left;
-                newFeature.pixel_to_next_right = minima_right - minima;
+                newFeature.pixel_to_next_left = pixel_to_next_left;
+                newFeature.pixel_to_next_right = pixel_to_next_right;
 
                 features1.Add(newFeature);
 
@@ -108,21 +116,29 @@ namespace ImageRegistration2010
                 int minima = minima_index_contour2[i];
                 int minima_left = 0;
                 int minima_right = 0;
+                int pixel_to_next_left = 0;
+                int pixel_to_next_right = 0;
 
                 if (i == 0)
                 {
                     minima_right = minima_index_contour2[i + 1];
                     minima_left = minima_index_contour2[minima_index_contour2.Count - 1];
+                    pixel_to_next_right = minima_right - minima;
+                    pixel_to_next_left = (angle_at_pixel_image2.Count - minima_left) + minima; 
                 }
                 if (i == minima_index_contour2.Count - 1)
                 {
                     minima_right = minima_index_contour2[0];
                     minima_left = minima_index_contour2[i - 1];
+                    pixel_to_next_right = (angle_at_pixel_image2.Count - minima) + minima_right;
+                    pixel_to_next_left = minima - minima_left;
                 }
                 if (i != 0 && i != (minima_index_contour2.Count - 1))
                 {
                     minima_right = minima_index_contour2[i + 1];
                     minima_left = minima_index_contour2[i - 1];
+                    pixel_to_next_left = minima - minima_left;
+                    pixel_to_next_right = minima_right - minima;
                 }
 
                 Feature newFeature = new Feature();
@@ -131,8 +147,10 @@ namespace ImageRegistration2010
                 newFeature.angle_at_pixel = angle_at_pixel_image2[minima];
                 newFeature.angle_left = angle_at_pixel_image2[minima_left];
                 newFeature.angle_right = angle_at_pixel_image2[minima_right];
-                newFeature.pixel_to_next_left = minima - minima_left;
-                newFeature.pixel_to_next_right = minima_right - minima;
+                newFeature.pixel_to_next_left = pixel_to_next_left;
+                newFeature.pixel_to_next_right = pixel_to_next_right;
+
+
 
                 features2.Add(newFeature);
 
@@ -141,60 +159,30 @@ namespace ImageRegistration2010
             //Calculating the best matching features
             List<Feature> bestFeatures = calculateBestMatchingFeatures(features1, features2);
 
+            
+            List<Feature> bestFeatures2 = new List<Feature>();
+            Feature f1 = new Feature();
+            f1.point = new Point(54, 141);
+            bestFeatures2.Add(f1);
+            Feature f2 = new Feature();
+            f2.point = new Point(141, 236);
+            bestFeatures2.Add(f2);
+            Feature f3 = new Feature();
+            f3.point = new Point(192, 241);
+            bestFeatures2.Add(f3);
+            Feature f4 = new Feature();
+            f4.point = new Point(241, 97);
+            bestFeatures2.Add(f4);
+
+            
+
             //Calculating the transformation for the best features
             Transformation transformation = calculateTransformation(bestFeatures);
 
 
-            //List<PixelUtil> pixelList_image2 = new List<PixelUtil>();
-            //for (int i = 0; i < angle_at_pixel_image2.Count; i++)
-            //{
-            //    PixelUtil pU = new PixelUtil();
-            //    pU.point = points2[i];
-            //    pU.index_in_contour = i;
-            //    pU.angle_at_pixel = angle_at_pixel_image2[i];
-            //    if (i == 0)
-            //    {
-            //        pU.angle_forw = angle_at_pixel_image2[i + 1];
-            //        pU.angle_back = angle_at_pixel_image2[points2.Length - 1];
-            //    }
-            //    if (i == points2.Length - 1)
-            //    {
-            //        pU.angle_forw = angle_at_pixel_image2[0];
-            //        pU.angle_back = angle_at_pixel_image2[i - 1];
-            //    }
-            //    if (i != 0 && i != (points2.Length - 1))
-            //    {
-            //        pU.angle_forw = angle_at_pixel_image2[i + 1];
-            //        pU.angle_back = angle_at_pixel_image2[i - 1];
-            //    }
-            //    pixelList_image2.Add(pU);
-            //}
-
-            //Minimale Differenzberechnung von allen Pixeln
-
-            //double min_diff = double.MaxValue;
-            //int index_image1;
-            //int index_image2;
-            //for (int i = 0; i < pixelList_image1.Count; i++)
-            //{
-            //    for (int j = 0; j < pixelList_image2.Count; j++)
-            //    {
-            //        if (pixelList_image1[i].angle_at_pixel > 45 && pixelList_image2[j].angle_at_pixel > 45)
-            //        {
-            //            if (pixelList_image1[i].calculateDifference(pixelList_image2[j]) < min_diff)
-            //            {
-            //                min_diff = pixelList_image1[i].calculateDifference(pixelList_image2[j]);
-            //                index_image1 = i;
-            //                index_image2 = j;
-            //            }
-            //        }
-            //    }
-            //}
-
-
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung" + "\\" + "angles.csv"))
             {
-                for (int i = angle_at_pixel_image1.Count - 1; i >= 0; i--)
+                for (int i = 0; i < angle_at_pixel_image1.Count; i++)
                 {
                     String line;
                     if (i < angle_at_pixel_image2.Count)
@@ -214,8 +202,8 @@ namespace ImageRegistration2010
             int trans_x = bestFeatures[0].point.X - bestFeatures[1].point.X;
             int trans_y = bestFeatures[0].point.Y - bestFeatures[1].point.Y;
 
-            System.Windows.Vector vector1 = new System.Windows.Vector(bestFeatures[2].point.X, bestFeatures[2].point.Y) - new System.Windows.Vector(bestFeatures[0].point.X, bestFeatures[1].point.Y);
-            System.Windows.Vector vector2 = new System.Windows.Vector(bestFeatures[3].point.X, bestFeatures[3].point.Y) - new System.Windows.Vector(bestFeatures[0].point.X, bestFeatures[1].point.Y);
+            System.Windows.Vector vector1 = new System.Windows.Vector(bestFeatures[2].point.X, bestFeatures[2].point.Y) - new System.Windows.Vector(bestFeatures[0].point.X, bestFeatures[0].point.Y);
+            System.Windows.Vector vector2 = new System.Windows.Vector(bestFeatures[3].point.X, bestFeatures[3].point.Y) - new System.Windows.Vector(bestFeatures[1].point.X, bestFeatures[1].point.Y);
 
             double rotation_angle = System.Windows.Vector.AngleBetween(vector1, vector2);
 
@@ -223,6 +211,7 @@ namespace ImageRegistration2010
             transformation.translation_x = trans_x;
             transformation.translation_y = trans_y;
             transformation.rotation = Convert.ToInt32(rotation_angle)*-1;
+            //transformation.rotation = 0;
             transformation.rotation_center_x = bestFeatures[0].point.X;
             transformation.rotation_center_y = bestFeatures[0].point.Y;
 
@@ -242,7 +231,7 @@ namespace ImageRegistration2010
             {
                 for (int j = 0; j < features2.Count; j++)
                 {
-                    double diff = features1[i].calculateDifferenceWithDistance(features2[j]);
+                    double diff = features1[i].calculateDifferenceOnlyByAngle(features2[j]);
                     if (diff < min_diff)
                     {
                         min_diff_2nd = min_diff;
@@ -286,6 +275,9 @@ namespace ImageRegistration2010
                         break;
                     else
                     {
+                        double test = angle_at_pixel_image[j];
+                        double test2 = angle_at_pixel_image[minima];
+
                         if (angle_at_pixel_image[j] < angle_at_pixel_image[minima])
                             minima = j;
                     }
@@ -324,7 +316,8 @@ namespace ImageRegistration2010
                 }
                 n++;
             }
-            Line line_back = linearRegression(xdata_line_back,ydata_line_back);
+            //Line line_back = linearRegression(xdata_line_back,ydata_line_back);
+            Line line_back = linearRegressionThroughPixel(xdata_line_back, ydata_line_back, points[point]);
 
 
             //Calculation for the line forwards
@@ -349,7 +342,8 @@ namespace ImageRegistration2010
                 }
                 n++;
             }
-            Line line_for = linearRegression(xdata_line_for, ydata_line_for);
+            //Line line_for = linearRegression(xdata_line_for, ydata_line_for);
+            Line line_for = linearRegressionThroughPixel(xdata_line_for, ydata_line_for, points[point]);
 
 
             //Calculate the intersection of the two lines
@@ -428,6 +422,7 @@ namespace ImageRegistration2010
 
             center.y = y_coord / ydata.Length;
 
+
             return center;
 
         }
@@ -447,6 +442,25 @@ namespace ImageRegistration2010
             line.setA(p[0]);
             //Steigung
             line.setB(p[1]);
+
+            return line;
+        }
+
+        private Line linearRegressionThroughPixel(float[] xdata, float[] ydata, Point p)
+        {
+            // build matrices
+            var X = DenseMatrix.CreateFromColumns(new[] { new DenseVector(xdata.Length, 1), new DenseVector(xdata) });
+            var y = new DenseVector(ydata);
+
+            // solve
+            var s = X.QR().Solve(y);
+
+            //Steigung
+            double m = s[1];
+
+            Line line = new Line();
+            line.setB(m);
+            line.setA(m*(-1*(p.X))+p.Y);
 
             return line;
         }
@@ -502,11 +516,13 @@ namespace ImageRegistration2010
         {
             Bitmap trans_imageB = new Bitmap(A.Width, A.Height);
             Graphics g = Graphics.FromImage(trans_imageB);
-            g.TranslateTransform(t.translation_x, t.translation_y);
 
-            g.TranslateTransform((float)A.Width / 2, (float)A.Height / 2);
+
+            g.TranslateTransform((float)t.rotation_center_x, (float)t.rotation_center_y);
             g.RotateTransform(t.rotation);
-            g.TranslateTransform(-(float)A.Width / 2, -(float)A.Height / 2);
+            g.TranslateTransform(-(float)t.rotation_center_x, -(float)t.rotation_center_y);
+
+            g.TranslateTransform(t.translation_x, t.translation_y);
 
             g.DrawImage(B, new Point(0, 0));
 

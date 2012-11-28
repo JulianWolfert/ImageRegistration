@@ -36,6 +36,11 @@ namespace ImageRegistration2010
 
             return diff;
         }
+        public double calculateDifferenceOnlyByAngle(Feature anotherFeature)
+        {
+            double diff = (anotherFeature.angle_at_pixel - this.angle_at_pixel) * (anotherFeature.angle_at_pixel - this.angle_at_pixel);
+            return diff;
+        }
 
     }
 }

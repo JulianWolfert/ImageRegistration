@@ -48,5 +48,7 @@ namespace ImageRegistration2010
 
             return newbmp;
         }
+
+
     }
 }
