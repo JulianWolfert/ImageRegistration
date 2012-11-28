@@ -43,24 +43,42 @@ namespace ImageRegistrationConsole
         //Create binary image with otsu threshold
         public Bitmap createBinaryOtsu(Bitmap img)
         {
-            Image<Hsv, Byte> hsvImage = new Image<Hsv, byte>(img);
+
+            Image<Bgr,Byte> image = new Image<Bgr, byte>(img);
+
+            image = image.SmoothBlur(50, 50, true);
+
+            //Vorder und Hintergrundtrennung mit OTSU.
+            Image<Gray, Byte> otsuImage = new Image<Gray, Byte>(image.Size);
+            CvInvoke.cvThreshold(image.Convert<Gray, byte>(), otsuImage, 64, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
+
+            //Entfernen von Schrift auf dem Briefumschlag durch Anwendung von Dilate und Erode
+            otsuImage = otsuImage.Erode(2).Dilate(2);
+
+
+            //Image<Hsv, Byte> hsvImage = new Image<Hsv, byte>(img);
             
-            Image<Gray, Byte> grayImage = new Image<Gray, Byte>(hsvImage.ToBitmap());
-
-            grayImage = grayImage.PyrDown();
-            grayImage = grayImage.PyrUp();
-            grayImage = grayImage.PyrDown();
-            grayImage = grayImage.PyrUp();
-
-            CvInvoke.cvSmooth(grayImage, grayImage, SMOOTH_TYPE.CV_GAUSSIAN, 13,13,0,0);
-
-            //grayImage = grayImage.Canny(1, 1);
-
-            CvInvoke.cvThreshold(grayImage, grayImage, 1, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
-            //CvInvoke.cvAdaptiveThreshold(grayImage, grayImage, 255, Emgu.CV.CvEnum.ADAPTIVE_THRESHOLD_TYPE.CV_ADAPTIVE_THRESH_MEAN_C, Emgu.CV.CvEnum.THRESH.CV_THRESH_BINARY, adaptiveThresholdBlockSize + adaptiveThresholdBlockSize % 2 + 1, adaptiveThresholdParameter);
+            //Image<Gray, Byte> grayImage = new Image<Gray, Byte>(hsvImage.ToBitmap());
 
 
-            return grayImage.ToBitmap();
+
+            ////grayImage.SmoothBlur(20, 20, true);
+
+            //CvInvoke.cvThreshold(grayImage, grayImage, 64, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
+            ////CvInvoke.cvAdaptiveThreshold(grayImage, grayImage, 255, Emgu.CV.CvEnum.ADAPTIVE_THRESHOLD_TYPE.CV_ADAPTIVE_THRESH_MEAN_C, Emgu.CV.CvEnum.THRESH.CV_THRESH_BINARY, adaptiveThresholdBlockSize + adaptiveThresholdBlockSize % 2 + 1, adaptiveThresholdParameter);
+
+            ////grayImage = grayImage.PyrDown();
+            ////grayImage = grayImage.PyrUp();
+            ////grayImage = grayImage.PyrDown();
+            ////grayImage = grayImage.PyrUp();
+            ////grayImage = grayImage.PyrDown();
+            ////grayImage = grayImage.PyrUp();
+            ////grayImage = grayImage.PyrDown();
+            ////grayImage = grayImage.PyrUp();
+
+            //return grayImage.ToBitmap();
+
+            return otsuImage.ToBitmap();
         }
 
         //Create contour

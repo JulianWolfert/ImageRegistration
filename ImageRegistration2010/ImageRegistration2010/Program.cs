@@ -28,21 +28,34 @@ namespace ImageRegistrationConsole
             int count = dir.GetFiles().Count();
             Console.WriteLine(count + " Bilder gefunden\n");
 
-            //Check picture pair 0-9
-            for (int i = 0; i <= 9; i++)
+
+            //Check picture pair 0-99
+            for (int i = 1; i <= 99; i++)
             {
+                String pattern;
+                String outputfolder;
+                if (i < 10)
+                {
+                    pattern = "00" + i + "*";
+                    outputfolder = "00" + i;
+                }
+                else
+                {
+                    pattern = "0" + i + "*";
+                    outputfolder = "0" + i;
+                }
 
                 //Get pair of picture
-                FileInfo[] files = dir.GetFiles(i +"*");
+                FileInfo[] files = dir.GetFiles(pattern);
            
-                if (files.Length != 0)
+                if (files.Length == 2)
                 {
                     Console.WriteLine("\nVearbeite Bilder " + files[0] + " und " + files[1]);
                     Bitmap image1 = new Bitmap(folderPath + "\\" + files[0]);
                     Bitmap image2 = new Bitmap(folderPath + "\\" + files[1]);
-                    String outputfolder = folderPath + "\\" + i;
-                    Directory.CreateDirectory(outputfolder);
-                    startImageProcessing(image1, image2, outputfolder);
+                    String complete_outputfolder = folderPath + "\\" + outputfolder;
+                    Directory.CreateDirectory(complete_outputfolder);
+                    startImageProcessing(image1, image2, complete_outputfolder);
                 }
 
             }
@@ -68,12 +81,12 @@ namespace ImageRegistrationConsole
 
             //Find contour of A - Only longest!
             List<Contour<Point>> contours_image1 = imageProcessor.findContoursWithOpenCV(image1bin);
-           // exporter.exportToCSV(contours_image1, outputfolder, "contourA.csv");
+            exporter.exportToCSV(contours_image1, outputfolder, "contourA.csv");
             Bitmap contour_image1 = exporter.exportToImage(contours_image1, outputfolder, "contourA.png", A.Height, A.Width);
 
             //Find contour of B - Only longest!
             List<Contour<Point>> contours_image2 = imageProcessor.findContoursWithOpenCV(image2bin);
-            //exporter.exportToCSV(contours_image2, outputfolder, "contourB.csv");
+            exporter.exportToCSV(contours_image2, outputfolder, "contourB.csv");
             Bitmap contour_image2 = exporter.exportToImage(contours_image2, outputfolder, "contourB.png", B.Height, B.Width);
 
             //Calculate transformation with help of the two contours

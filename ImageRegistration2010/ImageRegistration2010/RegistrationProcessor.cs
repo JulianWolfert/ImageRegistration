@@ -25,9 +25,9 @@ namespace ImageRegistration2010
     {
 
         //Next neighbours for linear regression
-        private int next_neighbours_regression = 100;
+        private int next_neighbours_regression = 150;
         //Lenght of the segment for finding the minima
-        private int feature_intervall = 100;
+        private int feature_intervall = 200;
 
 
         public Transformation calculateTransformation(List<Contour<Point>> contours_image1, List<Contour<Point>> contours_image2)
@@ -162,42 +162,42 @@ namespace ImageRegistration2010
             
             List<Feature> bestFeatures2 = new List<Feature>();
             Feature f1 = new Feature();
-            f1.point = new Point(54, 141);
+            f1.point = new Point(503, 607);
             bestFeatures2.Add(f1);
             Feature f2 = new Feature();
-            f2.point = new Point(141, 236);
+            f2.point = new Point(405, 591);
             bestFeatures2.Add(f2);
             Feature f3 = new Feature();
-            f3.point = new Point(192, 241);
+            f3.point = new Point(705, 131);
             bestFeatures2.Add(f3);
             Feature f4 = new Feature();
-            f4.point = new Point(241, 97);
+            f4.point = new Point(405, 103);
             bestFeatures2.Add(f4);
 
             
 
             //Calculating the transformation for the best features
-            Transformation transformation = calculateTransformation(bestFeatures);
+            Transformation transformation = calculateTransformationValues(bestFeatures);
 
 
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung" + "\\" + "angles.csv"))
-            {
-                for (int i = 0; i < angle_at_pixel_image1.Count; i++)
-                {
-                    String line;
-                    if (i < angle_at_pixel_image2.Count)
-                        line = angle_at_pixel_image1[i] + ";" + angle_at_pixel_image2[i];
-                    else
-                        line = angle_at_pixel_image1[i].ToString();
-                    file.WriteLine(line);
-                }
-            }
+            //using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung" + "\\" + "angles.csv"))
+            //{
+            //    for (int i = 0; i < angle_at_pixel_image1.Count; i++)
+            //    {
+            //        String line;
+            //        if (i < angle_at_pixel_image2.Count)
+            //            line = angle_at_pixel_image1[i] + ";" + angle_at_pixel_image2[i];
+            //        else
+            //            line = angle_at_pixel_image1[i].ToString();
+            //        file.WriteLine(line);
+            //    }
+            //}
 
 
             return transformation;
         }
 
-        private Transformation calculateTransformation(List<Feature> bestFeatures)
+        private Transformation calculateTransformationValues(List<Feature> bestFeatures)
         {
             int trans_x = bestFeatures[0].point.X - bestFeatures[1].point.X;
             int trans_y = bestFeatures[0].point.Y - bestFeatures[1].point.Y;
@@ -210,10 +210,12 @@ namespace ImageRegistration2010
             Transformation transformation = new Transformation();
             transformation.translation_x = trans_x;
             transformation.translation_y = trans_y;
+
             transformation.rotation = Convert.ToInt32(rotation_angle)*-1;
-            //transformation.rotation = 0;
             transformation.rotation_center_x = bestFeatures[0].point.X;
             transformation.rotation_center_y = bestFeatures[0].point.Y;
+
+            transformation.scale = 1.0;
 
             return transformation;
         }
@@ -475,6 +477,7 @@ namespace ImageRegistration2010
 
             g.TranslateTransform((float)t.rotation_center_x, (float)t.rotation_center_y);
             g.RotateTransform(t.rotation);
+            g.ScaleTransform((float)t.scale, (float)t.scale);
             g.TranslateTransform(-(float)t.rotation_center_x, -(float)t.rotation_center_y);
 
             g.TranslateTransform(t.translation_x, t.translation_y);
@@ -520,6 +523,7 @@ namespace ImageRegistration2010
 
             g.TranslateTransform((float)t.rotation_center_x, (float)t.rotation_center_y);
             g.RotateTransform(t.rotation);
+            g.ScaleTransform((float)t.scale, (float)t.scale);
             g.TranslateTransform(-(float)t.rotation_center_x, -(float)t.rotation_center_y);
 
             g.TranslateTransform(t.translation_x, t.translation_y);
