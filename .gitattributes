@@ -5,7 +5,6 @@ ImageRegistration2010/ImageRegistration2010/Feature.cs -text
 ImageRegistration2010/ImageRegistration2010/ImageProcessor.cs -text
 ImageRegistration2010/ImageRegistration2010/ImageRegistration2010.csproj -text
 ImageRegistration2010/ImageRegistration2010/Line.cs -text
-ImageRegistration2010/ImageRegistration2010/Otsu.cs -text
 ImageRegistration2010/ImageRegistration2010/Pixel.cs -text
 ImageRegistration2010/ImageRegistration2010/Program.cs -text
 ImageRegistration2010/ImageRegistration2010/Properties/AssemblyInfo.cs -text

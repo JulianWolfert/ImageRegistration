@@ -179,7 +179,7 @@ namespace ImageRegistration2010
             //Calculating the transformation for the best features
             Transformation transformation = calculateTransformationValues(bestFeatures);
 
-
+            //Write angles to csv
             //using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung" + "\\" + "angles.csv"))
             //{
             //    for (int i = 0; i < angle_at_pixel_image1.Count; i++)
@@ -448,6 +448,8 @@ namespace ImageRegistration2010
             return line;
         }
 
+        //Create a line with for a given set of points with linear regression - through a given point
+        //Based on: http://christoph.ruegg.name/blog/2012/9/9/linear-regression-mathnet-numerics.html
         private Line linearRegressionThroughPixel(float[] xdata, float[] ydata, Point p)
         {
             // build matrices
