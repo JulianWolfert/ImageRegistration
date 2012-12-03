@@ -34,9 +34,9 @@ namespace ImageRegistration2010
         {
 
             //Get the points of the FIRST (=0) contour
-            Point[] points1  = contours_image1[0].ToArray();
+            Point[] points1 = contours_image1[0].ToArray();
 
-            Dictionary<int,double> angle_at_pixel_image1 = new Dictionary<int,double>();
+            Dictionary<int, double> angle_at_pixel_image1 = new Dictionary<int, double>();
 
             //Calculate the angle at every pixel for picture 1
             for (int i = 0; i < points1.Length; i++)
@@ -60,10 +60,10 @@ namespace ImageRegistration2010
 
                 if (i == 0)
                 {
-                    minima_right = minima_index_contour1[i+1];
+                    minima_right = minima_index_contour1[i + 1];
                     minima_left = minima_index_contour1[minima_index_contour1.Count - 1];
                     pixel_to_next_right = minima_right - minima;
-                    pixel_to_next_left = (angle_at_pixel_image1.Count - minima_left) + minima; 
+                    pixel_to_next_left = (angle_at_pixel_image1.Count - minima_left) + minima;
                 }
                 if (i == minima_index_contour1.Count - 1)
                 {
@@ -124,7 +124,7 @@ namespace ImageRegistration2010
                     minima_right = minima_index_contour2[i + 1];
                     minima_left = minima_index_contour2[minima_index_contour2.Count - 1];
                     pixel_to_next_right = minima_right - minima;
-                    pixel_to_next_left = (angle_at_pixel_image2.Count - minima_left) + minima; 
+                    pixel_to_next_left = (angle_at_pixel_image2.Count - minima_left) + minima;
                 }
                 if (i == minima_index_contour2.Count - 1)
                 {
@@ -159,7 +159,7 @@ namespace ImageRegistration2010
             //Calculating the best matching features
             List<Feature> bestFeatures = calculateBestMatchingFeatures(features1, features2);
 
-            
+
             List<Feature> bestFeatures2 = new List<Feature>();
             Feature f1 = new Feature();
             f1.point = new Point(503, 607);
@@ -174,7 +174,7 @@ namespace ImageRegistration2010
             f4.point = new Point(405, 103);
             bestFeatures2.Add(f4);
 
-            
+
 
             //Calculating the transformation for the best features
             Transformation transformation = calculateTransformationValues(bestFeatures);
@@ -211,7 +211,7 @@ namespace ImageRegistration2010
             transformation.translation_x = trans_x;
             transformation.translation_y = trans_y;
 
-            transformation.rotation = Convert.ToInt32(rotation_angle)*-1;
+            transformation.rotation = Convert.ToInt32(rotation_angle) * -1;
             transformation.rotation_center_x = bestFeatures[0].point.X;
             transformation.rotation_center_y = bestFeatures[0].point.Y;
 
@@ -297,14 +297,14 @@ namespace ImageRegistration2010
         {
 
             //Calculation for the line backwards
-            float[] xdata_line_back = new float[next_neighbours_regression+1];
-            float[] ydata_line_back = new float[next_neighbours_regression+1];
+            float[] xdata_line_back = new float[next_neighbours_regression + 1];
+            float[] ydata_line_back = new float[next_neighbours_regression + 1];
 
             xdata_line_back[0] = points[point].X;
             ydata_line_back[0] = points[point].Y;
 
-            int n=1;
-            for (int i=point-next_neighbours_regression; i < point; i++)
+            int n = 1;
+            for (int i = point - next_neighbours_regression; i < point; i++)
             {
                 if (i < 0)
                 {
@@ -323,16 +323,16 @@ namespace ImageRegistration2010
 
 
             //Calculation for the line forwards
-            float[] xdata_line_for = new float[next_neighbours_regression+1];
-            float[] ydata_line_for = new float[next_neighbours_regression+1];
+            float[] xdata_line_for = new float[next_neighbours_regression + 1];
+            float[] ydata_line_for = new float[next_neighbours_regression + 1];
 
             xdata_line_for[0] = points[point].X;
             ydata_line_for[0] = points[point].Y;
 
-            n=1;
-            for (int i=point+next_neighbours_regression; i > point; i--)
+            n = 1;
+            for (int i = point + next_neighbours_regression; i > point; i--)
             {
-                if (i > points.Length-1)
+                if (i > points.Length - 1)
                 {
                     xdata_line_for[n] = points[i - (points.Length)].X;
                     ydata_line_for[n] = points[i - (points.Length)].Y;
@@ -349,9 +349,9 @@ namespace ImageRegistration2010
 
 
             //Calculate the intersection of the two lines
-            Coordinates intersection = calculateIntersection(line_for,line_back);
+            Coordinates intersection = calculateIntersection(line_for, line_back);
             //Calculate the center for the forward points
-            Coordinates center_for = calculateCenter(xdata_line_for,ydata_line_for);
+            Coordinates center_for = calculateCenter(xdata_line_for, ydata_line_for);
             //Calculate the center for the backward points
             Coordinates center_back = calculateCenter(xdata_line_back, ydata_line_back);
 
@@ -375,8 +375,8 @@ namespace ImageRegistration2010
         private System.Windows.Vector findCorrectVectorWithSmallerAngle(Line line, Coordinates intersection, float contour_x, float contour_y)
         {
             System.Windows.Vector refVector = new System.Windows.Vector(contour_x, contour_y) - new System.Windows.Vector(intersection.x, intersection.y);
-            
-            Coordinates line_plus_x = new Coordinates(intersection.x + 1,line.getB() * (intersection.x + 1) + line.getA());
+
+            Coordinates line_plus_x = new Coordinates(intersection.x + 1, line.getB() * (intersection.x + 1) + line.getA());
             System.Windows.Vector lineVector_plus = new System.Windows.Vector(line_plus_x.x, line_plus_x.y) - new System.Windows.Vector(intersection.x, intersection.y);
 
             Coordinates line_minus_x = new Coordinates(intersection.x - 1, line.getB() * (intersection.x - 1) + line.getA());
@@ -464,7 +464,7 @@ namespace ImageRegistration2010
 
             Line line = new Line();
             line.setB(m);
-            line.setA(m*(-1*(p.X))+p.Y);
+            line.setA(m * (-1 * (p.X)) + p.Y);
 
             return line;
         }
