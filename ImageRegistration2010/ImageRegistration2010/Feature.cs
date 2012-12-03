@@ -11,11 +11,11 @@ namespace ImageRegistration2010
     class Feature
     {
 
-        public Point point {get; set;} 
-        public int index_in_contour {get; set;} 
-        public double angle_at_pixel {get; set;} 
-        public double angle_left {get; set;} 
-        public double angle_right {get; set;}
+        public Point point { get; set; }
+        public int index_in_contour { get; set; }
+        public double angle_at_pixel { get; set; }
+        public double angle_left { get; set; }
+        public double angle_right { get; set; }
         public int pixel_to_next_left { get; set; }
         public int pixel_to_next_right { get; set; }
 
