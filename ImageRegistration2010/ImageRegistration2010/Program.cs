@@ -18,7 +18,7 @@ namespace ImageRegistrationConsole
 
             Console.WriteLine("######## IMAGE-REGISTRATION V1.0 ########\n");
             //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
-            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\mbvMA\\Pairs";
+            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\PairsRotate90";
 
             if (args.Length != 0)
                 folderPath = args[0];
@@ -47,7 +47,7 @@ namespace ImageRegistrationConsole
 
                 //Get pair of picture
                 FileInfo[] files = dir.GetFiles(pattern);
-           
+
                 if (files.Length == 2)
                 {
                     Console.WriteLine("\nVearbeite Bilder " + files[0] + " und " + files[1]);
@@ -70,7 +70,7 @@ namespace ImageRegistrationConsole
             RegistrationProcessor registrationProcessor = new RegistrationProcessor();
 
 
-            
+
             //Create binary image of A with otsu threshold and save
             Bitmap image1bin = imageProcessor.createBinaryOtsu(A);
             image1bin.Save(outputfolder + "\\Abin.png", ImageFormat.Png);
@@ -90,15 +90,23 @@ namespace ImageRegistrationConsole
             Bitmap contour_image2 = exporter.exportToImage(contours_image2, outputfolder, "contourB.png", B.Height, B.Width);
 
             //Calculate transformation with help of the two contours
-            Transformation t1 = registrationProcessor.calculateTransformation(contours_image1, contours_image2);
+            try
+            {
+                Transformation t1 = registrationProcessor.calculateTransformation(contours_image1, contours_image2);
+                //Start registration of contours
+                Bitmap registrated_Contours = registrationProcessor.registrationContour(t1, contour_image1, contour_image2);
+                registrated_Contours.Save(outputfolder + "\\contoursR.png", ImageFormat.Png);
 
-            //Start registration of contours
-            Bitmap registrated_Contours = registrationProcessor.registrationContour(t1, contour_image1, contour_image2);
-            registrated_Contours.Save(outputfolder + "\\contoursR.png", ImageFormat.Png);
+                //Start registration of orginial images
+                Bitmap registrated_originals = registrationProcessor.registrationBitmap(t1, A, B);
+                registrated_originals.Save(outputfolder + "\\registration.png", ImageFormat.Png);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Fehler");
+            }
 
-            //Start registration of orginial images
-            Bitmap registrated_originals = registrationProcessor.registrationBitmap(t1, A, B);
-            registrated_originals.Save(outputfolder + "\\registration.png", ImageFormat.Png);
+
 
 
 
