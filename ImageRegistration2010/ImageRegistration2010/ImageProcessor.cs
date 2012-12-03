@@ -17,7 +17,7 @@ namespace ImageRegistrationConsole
     class ImageProcessor
     {
         //Filteroptions
-        private bool noiseFilter =  true;
+        private bool noiseFilter = true;
         private bool filterContoursBySize = false;
 
         //Parameters
@@ -44,7 +44,7 @@ namespace ImageRegistrationConsole
         public Bitmap createBinaryOtsu(Bitmap img)
         {
 
-            Image<Bgr,Byte> image = new Image<Bgr, byte>(img);
+            Image<Bgr, Byte> image = new Image<Bgr, byte>(img);
 
             image = image.SmoothBlur(50, 50, true);
 
@@ -53,11 +53,11 @@ namespace ImageRegistrationConsole
             CvInvoke.cvThreshold(image.Convert<Gray, byte>(), otsuImage, 64, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
 
             //Entfernen von Schrift auf dem Briefumschlag durch Anwendung von Dilate und Erode
-            otsuImage = otsuImage.Erode(2).Dilate(2);
+            //otsuImage = otsuImage.Erode(2).Dilate(2);
 
 
             //Image<Hsv, Byte> hsvImage = new Image<Hsv, byte>(img);
-            
+
             //Image<Gray, Byte> grayImage = new Image<Gray, Byte>(hsvImage.ToBitmap());
 
 
@@ -89,7 +89,7 @@ namespace ImageRegistrationConsole
             //find contours
             var sourceContours = grayFrame.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
             //filter contours
-            List<Contour<Point>> contours  = FilterContours(sourceContours, grayFrame, grayFrame.Width, grayFrame.Height);
+            List<Contour<Point>> contours = FilterContours(sourceContours, grayFrame, grayFrame.Width, grayFrame.Height);
 
             List<Contour<Point>> onlyMaxContour = new List<Contour<Point>>();
 
@@ -106,7 +106,7 @@ namespace ImageRegistrationConsole
 
 
         }
-        
+
         //Utilfunction for filter contours
         private List<Contour<Point>> FilterContours(Contour<Point> contours, Image<Gray, byte> cannyFrame, int frameWidth, int frameHeight)
         {
@@ -205,7 +205,7 @@ namespace ImageRegistrationConsole
             g.Dispose();
             return newBitmap;
         }
-        
+
 
         //Not Working properly
         private int findNextPixel(List<Pixel> contourPixel, Bitmap img, int direction)
@@ -330,7 +330,7 @@ namespace ImageRegistrationConsole
             {
                 Pixel newPixel = new Pixel();
                 newPixel.setX(x + 1);
-                newPixel.setY(y-1);
+                newPixel.setY(y - 1);
                 pixels.Add(newPixel);
                 return true;
             }
@@ -344,7 +344,7 @@ namespace ImageRegistrationConsole
             {
                 Pixel newPixel = new Pixel();
                 newPixel.setX(x);
-                newPixel.setY(y-1);
+                newPixel.setY(y - 1);
                 pixels.Add(newPixel);
                 return true;
             }
@@ -357,8 +357,8 @@ namespace ImageRegistrationConsole
             if (c == Color.FromArgb(0, 0, 0))
             {
                 Pixel newPixel = new Pixel();
-                newPixel.setX(x-1);
-                newPixel.setY(y-1);
+                newPixel.setX(x - 1);
+                newPixel.setY(y - 1);
                 pixels.Add(newPixel);
                 return true;
             }
@@ -371,7 +371,7 @@ namespace ImageRegistrationConsole
             if (c == Color.FromArgb(0, 0, 0))
             {
                 Pixel newPixel = new Pixel();
-                newPixel.setX(x-1);
+                newPixel.setX(x - 1);
                 newPixel.setY(y);
                 pixels.Add(newPixel);
                 return true;
@@ -385,8 +385,8 @@ namespace ImageRegistrationConsole
             if (c == Color.FromArgb(0, 0, 0))
             {
                 Pixel newPixel = new Pixel();
-                newPixel.setX(x-1);
-                newPixel.setY(y+1);
+                newPixel.setX(x - 1);
+                newPixel.setY(y + 1);
                 pixels.Add(newPixel);
                 return true;
             }
@@ -395,12 +395,12 @@ namespace ImageRegistrationConsole
         }
         private bool check6(List<Pixel> pixels, Bitmap img, int x, int y)
         {
-            Color c = img.GetPixel(x , y + 1);
+            Color c = img.GetPixel(x, y + 1);
             if (c == Color.FromArgb(0, 0, 0))
             {
                 Pixel newPixel = new Pixel();
                 newPixel.setX(x);
-                newPixel.setY(y+1);
+                newPixel.setY(y + 1);
                 pixels.Add(newPixel);
                 return true;
             }
@@ -412,9 +412,9 @@ namespace ImageRegistrationConsole
             Color c = img.GetPixel(x + 1, y + 1);
             if (c == Color.FromArgb(0, 0, 0))
             {
-                 Pixel newPixel = new Pixel();
-                newPixel.setX(x+1);
-                newPixel.setY(y+1);
+                Pixel newPixel = new Pixel();
+                newPixel.setX(x + 1);
+                newPixel.setY(y + 1);
                 pixels.Add(newPixel);
                 return true;
             }
@@ -427,7 +427,7 @@ namespace ImageRegistrationConsole
             if (c == Color.FromArgb(0, 0, 0))
             {
                 Pixel newPixel = new Pixel();
-                newPixel.setX(x+1);
+                newPixel.setX(x + 1);
                 newPixel.setY(y);
                 pixels.Add(newPixel);
                 return true;
