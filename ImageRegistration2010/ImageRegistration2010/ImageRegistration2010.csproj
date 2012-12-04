@@ -40,28 +40,28 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AForge">
-      <HintPath>..\Libraries\AForge.dll</HintPath>
+      <HintPath>..\..\Libraries\AForge\Release\AForge.dll</HintPath>
     </Reference>
     <Reference Include="AForge.Imaging">
-      <HintPath>..\Libraries\AForge.Imaging.dll</HintPath>
+      <HintPath>..\..\Libraries\AForge\Release\AForge.Imaging.dll</HintPath>
     </Reference>
     <Reference Include="AForge.Math">
-      <HintPath>..\Libraries\AForge.Math.dll</HintPath>
+      <HintPath>..\..\Libraries\AForge\Release\AForge.Math.dll</HintPath>
     </Reference>
     <Reference Include="Emgu.CV">
-      <HintPath>..\..\emgucv-windows-x64-gpu 2.4.2.1777\bin\Emgu.CV.dll</HintPath>
+      <HintPath>..\..\Libraries\emgucv-windows-x64-gpu 2.4.2.1777\bin\Emgu.CV.dll</HintPath>
     </Reference>
     <Reference Include="Emgu.Util">
-      <HintPath>..\..\emgucv-windows-x64-gpu 2.4.2.1777\bin\Emgu.Util.dll</HintPath>
+      <HintPath>..\..\Libraries\emgucv-windows-x64-gpu 2.4.2.1777\bin\Emgu.Util.dll</HintPath>
     </Reference>
     <Reference Include="MathNet.Numerics">
-      <HintPath>..\..\Net40\Net40\MathNet.Numerics.dll</HintPath>
+      <HintPath>..\..\Libraries\Math.Net\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="MathNet.Numerics.FSharp">
-      <HintPath>..\..\Net40\Net40\MathNet.Numerics.FSharp.dll</HintPath>
+      <HintPath>..\..\Libraries\Math.Net\MathNet.Numerics.FSharp.dll</HintPath>
     </Reference>
     <Reference Include="MathNet.Numerics.IO">
-      <HintPath>..\..\Net40\Net40\MathNet.Numerics.IO.dll</HintPath>
+      <HintPath>..\..\Libraries\Math.Net\MathNet.Numerics.IO.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -71,8 +71,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
     <Reference Include="zlib.net">
-      <HintPath>..\..\Net40\Net40\zlib.net.dll</HintPath>
+      <HintPath>..\..\Libraries\Math.Net\zlib.net.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -80,10 +81,11 @@
     <Compile Include="Line.cs" />
     <Compile Include="Pixel.cs" />
     <Compile Include="ImageProcessor.cs" />
-    <Compile Include="Otsu.cs" />
+    <Compile Include="Feature.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegistrationProcessor.cs" />
+    <Compile Include="Transformation.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

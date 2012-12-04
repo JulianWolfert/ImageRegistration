@@ -27,6 +27,7 @@ namespace ImageRegistration2010
 
         //Next neighbours for linear regression
         private int next_neighbours_regression = 300;
+        //private int next_neighbours_regression = 80;
         //Lenght of the segment for finding the minima
         private int feature_intervall = 200;
 
