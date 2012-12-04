@@ -17,7 +17,7 @@ namespace ImageRegistrationConsole
     class ImageProcessor
     {
         //Filteroptions
-        private bool noiseFilter = true;
+        private bool noiseFilter = false;
         private bool filterContoursBySize = false;
 
         //Parameters
@@ -43,40 +43,22 @@ namespace ImageRegistrationConsole
         //Create binary image with otsu threshold
         public Bitmap createBinaryOtsu(Bitmap img)
         {
-
             Image<Bgr, Byte> image = new Image<Bgr, byte>(img);
 
-            image = image.SmoothBlur(50, 50, true);
+            image._Dilate(10);
+            image._Erode(10);
+
+            //image._SmoothGaussian(25);
+            image = image.SmoothMedian(41);
+            //image = image.SmoothBlur(10, 10);
 
             //Vorder und Hintergrundtrennung mit OTSU.
-            Image<Gray, Byte> otsuImage = new Image<Gray, Byte>(image.Size);
-            CvInvoke.cvThreshold(image.Convert<Gray, byte>(), otsuImage, 64, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
+            Image<Gray, Byte> greyImage = image.Convert<Gray,byte>();
 
-            //Entfernen von Schrift auf dem Briefumschlag durch Anwendung von Dilate und Erode
-            //otsuImage = otsuImage.Erode(2).Dilate(2);
+            Image<Gray, Byte> otsuImage = new Image<Gray, Byte>(img.Size);
 
 
-            //Image<Hsv, Byte> hsvImage = new Image<Hsv, byte>(img);
-
-            //Image<Gray, Byte> grayImage = new Image<Gray, Byte>(hsvImage.ToBitmap());
-
-
-
-            ////grayImage.SmoothBlur(20, 20, true);
-
-            //CvInvoke.cvThreshold(grayImage, grayImage, 64, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
-            ////CvInvoke.cvAdaptiveThreshold(grayImage, grayImage, 255, Emgu.CV.CvEnum.ADAPTIVE_THRESHOLD_TYPE.CV_ADAPTIVE_THRESH_MEAN_C, Emgu.CV.CvEnum.THRESH.CV_THRESH_BINARY, adaptiveThresholdBlockSize + adaptiveThresholdBlockSize % 2 + 1, adaptiveThresholdParameter);
-
-            ////grayImage = grayImage.PyrDown();
-            ////grayImage = grayImage.PyrUp();
-            ////grayImage = grayImage.PyrDown();
-            ////grayImage = grayImage.PyrUp();
-            ////grayImage = grayImage.PyrDown();
-            ////grayImage = grayImage.PyrUp();
-            ////grayImage = grayImage.PyrDown();
-            ////grayImage = grayImage.PyrUp();
-
-            //return grayImage.ToBitmap();
+            CvInvoke.cvThreshold(greyImage, otsuImage, 0, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
 
             return otsuImage.ToBitmap();
         }
@@ -86,17 +68,19 @@ namespace ImageRegistrationConsole
         {
             Image<Gray, Byte> grayFrame = new Image<Gray, byte>(img);
 
+
+
             //find contours
             var sourceContours = grayFrame.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);
             //filter contours
-            List<Contour<Point>> contours = FilterContours(sourceContours, grayFrame, grayFrame.Width, grayFrame.Height);
+            List<Contour<Point>> contours = NoFilterContours(sourceContours, grayFrame, grayFrame.Width, grayFrame.Height);
 
             List<Contour<Point>> onlyMaxContour = new List<Contour<Point>>();
 
             int maxcontour = 0;
             for (int i = 1; i < contours.Count - 1; i++)
             {
-                if (contours[i].ToArray().Length > contours[maxcontour].ToArray().Length)
+                if (contours[i].Area > contours[maxcontour].Area)
                     maxcontour = i;
             }
 
@@ -131,6 +115,20 @@ namespace ImageRegistrationConsole
                 result.Add(c);
 
             next:
+                c = c.HNext;
+            }
+
+            return result;
+        }
+
+        private List<Contour<Point>> NoFilterContours(Contour<Point> contours, Image<Gray, byte> cannyFrame, int frameWidth, int frameHeight)
+        {
+            int maxArea = frameWidth * frameHeight / 5;
+            var c = contours;
+            List<Contour<Point>> result = new List<Contour<Point>>();
+            while (c != null)
+            {
+                result.Add(c);
                 c = c.HNext;
             }
 

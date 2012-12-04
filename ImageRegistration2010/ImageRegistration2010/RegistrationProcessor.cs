@@ -5,6 +5,7 @@ using Emgu.CV.Structure;
 using System.Drawing;
 using MathNet.Numerics.LinearAlgebra.Single;
 using System.IO;
+using System.Collections;
 
 
 namespace ImageRegistration2010
@@ -25,7 +26,7 @@ namespace ImageRegistration2010
     {
 
         //Next neighbours for linear regression
-        private int next_neighbours_regression = 150;
+        private int next_neighbours_regression = 300;
         //Lenght of the segment for finding the minima
         private int feature_intervall = 200;
 
@@ -45,53 +46,53 @@ namespace ImageRegistration2010
                 angle_at_pixel_image1.Add(i, angle);
             }
 
-            //Find the minimas vor picture 1
-            List<int> minima_index_contour1 = findMinima(angle_at_pixel_image1, feature_intervall);
+            ////Find the minimas vor picture 1
+            //List<int> minima_index_contour1 = findMinima(angle_at_pixel_image1, feature_intervall);
 
-            //Create and store the features for picture 1
-            List<Feature> features1 = new List<Feature>();
-            for (int i = 0; i < minima_index_contour1.Count; i++)
-            {
-                int minima = minima_index_contour1[i];
-                int minima_left = 0;
-                int minima_right = 0;
-                int pixel_to_next_left = 0;
-                int pixel_to_next_right = 0;
+            ////Create and store the features for picture 1
+            //List<Feature> features1 = new List<Feature>();
+            //for (int i = 0; i < minima_index_contour1.Count; i++)
+            //{
+            //    int minima = minima_index_contour1[i];
+            //    int minima_left = 0;
+            //    int minima_right = 0;
+            //    int pixel_to_next_left = 0;
+            //    int pixel_to_next_right = 0;
 
-                if (i == 0)
-                {
-                    minima_right = minima_index_contour1[i + 1];
-                    minima_left = minima_index_contour1[minima_index_contour1.Count - 1];
-                    pixel_to_next_right = minima_right - minima;
-                    pixel_to_next_left = (angle_at_pixel_image1.Count - minima_left) + minima;
-                }
-                if (i == minima_index_contour1.Count - 1)
-                {
-                    minima_right = minima_index_contour1[0];
-                    minima_left = minima_index_contour1[i - 1];
-                    pixel_to_next_right = (angle_at_pixel_image1.Count - minima) + minima_right;
-                    pixel_to_next_left = minima - minima_left;
-                }
-                if (i != 0 && i != (minima_index_contour1.Count - 1))
-                {
-                    minima_right = minima_index_contour1[i + 1];
-                    minima_left = minima_index_contour1[i - 1];
-                    pixel_to_next_left = minima - minima_left;
-                    pixel_to_next_right = minima_right - minima;
-                }
+            //    if (i == 0)
+            //    {
+            //        minima_right = minima_index_contour1[i + 1];
+            //        minima_left = minima_index_contour1[minima_index_contour1.Count - 1];
+            //        pixel_to_next_right = minima_right - minima;
+            //        pixel_to_next_left = (angle_at_pixel_image1.Count - minima_left) + minima;
+            //    }
+            //    if (i == minima_index_contour1.Count - 1)
+            //    {
+            //        minima_right = minima_index_contour1[0];
+            //        minima_left = minima_index_contour1[i - 1];
+            //        pixel_to_next_right = (angle_at_pixel_image1.Count - minima) + minima_right;
+            //        pixel_to_next_left = minima - minima_left;
+            //    }
+            //    if (i != 0 && i != (minima_index_contour1.Count - 1))
+            //    {
+            //        minima_right = minima_index_contour1[i + 1];
+            //        minima_left = minima_index_contour1[i - 1];
+            //        pixel_to_next_left = minima - minima_left;
+            //        pixel_to_next_right = minima_right - minima;
+            //    }
 
-                Feature newFeature = new Feature();
-                newFeature.point = new Point(points1[minima].X, points1[minima].Y);
-                newFeature.index_in_contour = minima;
-                newFeature.angle_at_pixel = angle_at_pixel_image1[minima];
-                newFeature.angle_left = angle_at_pixel_image1[minima_left];
-                newFeature.angle_right = angle_at_pixel_image1[minima_right];
-                newFeature.pixel_to_next_left = pixel_to_next_left;
-                newFeature.pixel_to_next_right = pixel_to_next_right;
+            //    Feature newFeature = new Feature();
+            //    newFeature.point = new Point(points1[minima].X, points1[minima].Y);
+            //    newFeature.index_in_contour = minima;
+            //    newFeature.angle_at_pixel = angle_at_pixel_image1[minima];
+            //    newFeature.angle_left = angle_at_pixel_image1[minima_left];
+            //    newFeature.angle_right = angle_at_pixel_image1[minima_right];
+            //    newFeature.pixel_to_next_left = pixel_to_next_left;
+            //    newFeature.pixel_to_next_right = pixel_to_next_right;
 
-                features1.Add(newFeature);
+            //    features1.Add(newFeature);
 
-            }
+            //}
 
 
             //Get the points of the FIRST (=0) contour
@@ -106,80 +107,66 @@ namespace ImageRegistration2010
                 angle_at_pixel_image2.Add(i, angle);
             }
 
-            //Find the minimas vor picture 2
-            List<int> minima_index_contour2 = findMinima(angle_at_pixel_image2, feature_intervall);
+            ////Find the minimas vor picture 2
+            //List<int> minima_index_contour2 = findMinima(angle_at_pixel_image2, feature_intervall);
 
-            //Create and store the features for picture 2
-            List<Feature> features2 = new List<Feature>();
-            for (int i = 0; i < minima_index_contour2.Count; i++)
-            {
-                int minima = minima_index_contour2[i];
-                int minima_left = 0;
-                int minima_right = 0;
-                int pixel_to_next_left = 0;
-                int pixel_to_next_right = 0;
+            ////Create and store the features for picture 2
+            //List<Feature> features2 = new List<Feature>();
+            //for (int i = 0; i < minima_index_contour2.Count; i++)
+            //{
+            //    int minima = minima_index_contour2[i];
+            //    int minima_left = 0;
+            //    int minima_right = 0;
+            //    int pixel_to_next_left = 0;
+            //    int pixel_to_next_right = 0;
 
-                if (i == 0)
-                {
-                    minima_right = minima_index_contour2[i + 1];
-                    minima_left = minima_index_contour2[minima_index_contour2.Count - 1];
-                    pixel_to_next_right = minima_right - minima;
-                    pixel_to_next_left = (angle_at_pixel_image2.Count - minima_left) + minima;
-                }
-                if (i == minima_index_contour2.Count - 1)
-                {
-                    minima_right = minima_index_contour2[0];
-                    minima_left = minima_index_contour2[i - 1];
-                    pixel_to_next_right = (angle_at_pixel_image2.Count - minima) + minima_right;
-                    pixel_to_next_left = minima - minima_left;
-                }
-                if (i != 0 && i != (minima_index_contour2.Count - 1))
-                {
-                    minima_right = minima_index_contour2[i + 1];
-                    minima_left = minima_index_contour2[i - 1];
-                    pixel_to_next_left = minima - minima_left;
-                    pixel_to_next_right = minima_right - minima;
-                }
+            //    if (i == 0)
+            //    {
+            //        minima_right = minima_index_contour2[i + 1];
+            //        minima_left = minima_index_contour2[minima_index_contour2.Count - 1];
+            //        pixel_to_next_right = minima_right - minima;
+            //        pixel_to_next_left = (angle_at_pixel_image2.Count - minima_left) + minima;
+            //    }
+            //    if (i == minima_index_contour2.Count - 1)
+            //    {
+            //        minima_right = minima_index_contour2[0];
+            //        minima_left = minima_index_contour2[i - 1];
+            //        pixel_to_next_right = (angle_at_pixel_image2.Count - minima) + minima_right;
+            //        pixel_to_next_left = minima - minima_left;
+            //    }
+            //    if (i != 0 && i != (minima_index_contour2.Count - 1))
+            //    {
+            //        minima_right = minima_index_contour2[i + 1];
+            //        minima_left = minima_index_contour2[i - 1];
+            //        pixel_to_next_left = minima - minima_left;
+            //        pixel_to_next_right = minima_right - minima;
+            //    }
 
-                Feature newFeature = new Feature();
-                newFeature.point = new Point(points2[minima].X, points2[minima].Y);
-                newFeature.index_in_contour = minima;
-                newFeature.angle_at_pixel = angle_at_pixel_image2[minima];
-                newFeature.angle_left = angle_at_pixel_image2[minima_left];
-                newFeature.angle_right = angle_at_pixel_image2[minima_right];
-                newFeature.pixel_to_next_left = pixel_to_next_left;
-                newFeature.pixel_to_next_right = pixel_to_next_right;
+            //    Feature newFeature = new Feature();
+            //    newFeature.point = new Point(points2[minima].X, points2[minima].Y);
+            //    newFeature.index_in_contour = minima;
+            //    newFeature.angle_at_pixel = angle_at_pixel_image2[minima];
+            //    newFeature.angle_left = angle_at_pixel_image2[minima_left];
+            //    newFeature.angle_right = angle_at_pixel_image2[minima_right];
+            //    newFeature.pixel_to_next_left = pixel_to_next_left;
+            //    newFeature.pixel_to_next_right = pixel_to_next_right;
 
 
 
-                features2.Add(newFeature);
+            //    features2.Add(newFeature);
 
-            }
+            //}
 
             //Calculating the best matching features
-            List<Feature> bestFeatures = calculateBestMatchingFeatures(features1, features2);
-
-
-            List<Feature> bestFeatures2 = new List<Feature>();
-            Feature f1 = new Feature();
-            f1.point = new Point(503, 607);
-            bestFeatures2.Add(f1);
-            Feature f2 = new Feature();
-            f2.point = new Point(405, 591);
-            bestFeatures2.Add(f2);
-            Feature f3 = new Feature();
-            f3.point = new Point(705, 131);
-            bestFeatures2.Add(f3);
-            Feature f4 = new Feature();
-            f4.point = new Point(405, 103);
-            bestFeatures2.Add(f4);
-
+            //List<Feature> bestFeatures = calculateBestMatchingFeatures(features1, features2);
+            //List<Feature> bestFeatures = calculateBestMatchingFeatureSimple(angle_at_pixel_image1, angle_at_pixel_image2, points1, points2);
+            List<Feature> bestFeatures = calculateBestMatchingFeatureGraph(angle_at_pixel_image1, angle_at_pixel_image2, points1, points2);
 
 
             //Calculating the transformation for the best features
             Transformation transformation = calculateTransformationValues(bestFeatures);
 
-            //Write angles to csv
+            ////Write angles to csv
             //using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung" + "\\" + "angles.csv"))
             //{
             //    for (int i = 0; i < angle_at_pixel_image1.Count; i++)
@@ -197,6 +184,180 @@ namespace ImageRegistration2010
             return transformation;
         }
 
+        //Calculate Best Matching Features - 10% smallest and 10% biggest angle
+        private List<Feature> calculateBestMatchingFeatureSimple(Dictionary<int, double> angle_at_pixel_image1, Dictionary<int, double> angle_at_pixel_image2, Point[] points1, Point[] points2)
+        {
+            List<KeyValuePair<int, double>> angleList1 = new List<KeyValuePair<int, double>>(angle_at_pixel_image1);
+            angleList1.Sort(
+                delegate(KeyValuePair<int, double> firstPair,
+                KeyValuePair<int, double> nextPair)
+                {
+                    return firstPair.Value.CompareTo(nextPair.Value);
+                }
+            );
+
+            List<KeyValuePair<int, double>> angleList2 = new List<KeyValuePair<int, double>>(angle_at_pixel_image2);
+            angleList2.Sort(
+                delegate(KeyValuePair<int, double> firstPair,
+                KeyValuePair<int, double> nextPair)
+                {
+                    return firstPair.Value.CompareTo(nextPair.Value);
+                }
+            );
+
+            Feature f1 = new Feature();
+            Feature f2 = new Feature();
+            Feature f3 = new Feature();
+            Feature f4 = new Feature();
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (Math.Round(angleList1[0].Value,5) == Math.Round(angleList2[i].Value,5))
+                {
+                    f1.index_in_contour = angleList1[0].Key;
+                    f1.point = points1[angleList1[0].Key];
+                    f2.index_in_contour = angleList2[i].Key;
+                    f2.point = points2[angleList2[i].Key];
+                }
+
+            }
+
+            for (int i = angleList1.Count - 1; i >= angleList1.Count - 10; i--)
+            {
+
+                for (int j = angleList2.Count - 1; j >= angleList2.Count - 10; j--)
+                {
+                    if (Math.Round(angleList1[i].Value, 5) == Math.Round(angleList2[j].Value, 5))
+                    {
+                        f3.index_in_contour = angleList1[i].Key;
+                        f3.point = points1[angleList1[i].Key];
+                        f4.index_in_contour = angleList2[j].Key;
+                        f4.point = points2[angleList2[j].Key];
+                    }
+                }
+            }
+
+
+
+            List<Feature> bestFeatures = new List<Feature>();
+            bestFeatures.Add(f1);
+            bestFeatures.Add(f2);
+            bestFeatures.Add(f3);
+            bestFeatures.Add(f4);
+
+            return bestFeatures;
+
+        }
+
+        //Move the Graph to best matching and return best Features
+        private List<Feature> calculateBestMatchingFeatureGraph(Dictionary<int, double> angle_at_pixel_image1, Dictionary<int, double> angle_at_pixel_image2, Point[] points1, Point[] points2)
+        {
+            Queue<double> q1 = new Queue<double>();
+            foreach (KeyValuePair<int, double> entry in angle_at_pixel_image1)
+            {
+                q1.Enqueue(entry.Value);
+            }
+            Queue<double> q2 = new Queue<double>();
+            foreach (KeyValuePair<int, double> entry in angle_at_pixel_image2)
+            {
+                q2.Enqueue(entry.Value);
+            }
+
+            int size;
+            if (q1.Count < q2.Count)
+                size = q1.Count;
+            else
+                size = q2.Count;
+
+            double diff = Double.MaxValue;
+            int min_index=0;
+            for (int i=0; i < size; i++)
+            {
+               double[] values1 = q1.ToArray();
+               double[] values2 = q2.ToArray();
+               if (calculateDifferenceBetweenCurves(values1,values2) < diff) 
+               {
+                   min_index = i;
+                   diff = calculateDifferenceBetweenCurves(values1,values2);
+               }
+               double front = q1.Dequeue();
+               q1.Enqueue(front);
+            }
+
+            int index1_2 = Convert.ToInt32(angle_at_pixel_image2.Count *(0.25));
+            int index2_2 = Convert.ToInt32(angle_at_pixel_image2.Count *(0.75));
+
+            int index1_1;
+            int index2_1;
+
+            if (index1_2 + min_index < angle_at_pixel_image1.Count)
+            {
+                index1_1 = index1_2 + min_index;
+            }
+            else
+            {
+                index1_1 = (index1_2 + min_index) - angle_at_pixel_image1.Count;
+            }
+            if (index2_2 + min_index < angle_at_pixel_image1.Count)
+            {
+                index2_1 = index2_2 + min_index;
+            }
+            else
+            {
+                index2_1 = (index2_2 + min_index) - angle_at_pixel_image1.Count;
+            }
+
+            Feature f1 = new Feature();
+            f1.index_in_contour = index1_1;
+            f1.point = points1[index1_1];
+
+            Feature f2 = new Feature();
+            f2.index_in_contour = index1_2;
+            f2.point = points2[index1_2];
+
+            Feature f3 = new Feature();
+            f3.index_in_contour = index2_1;
+            f3.point = points1[index2_1];
+
+            Feature f4 = new Feature();
+            f4.index_in_contour = index2_2;
+            f4.point = points2[index2_2];
+
+            List<Feature> bestFeatures = new List<Feature>();
+            bestFeatures.Add(f1);
+            bestFeatures.Add(f2);
+            bestFeatures.Add(f3);
+            bestFeatures.Add(f4);
+
+
+            return bestFeatures;
+        }
+
+        //Calculateing the difference betweeen 2 curves
+        private double calculateDifferenceBetweenCurves (double[] values1, double[] values2)
+        {
+
+            double diff = 0;
+            if (values1.Length <= values2.Length)
+            {
+                for (int i = 0; i < values1.Length; i++)
+                {
+                    diff = diff + (values1[i] - values2[i]) * (values1[i] - values2[i]);
+                }
+            }
+            else
+            {
+                
+                for (int i = 0; i < values2.Length; i++)
+                {
+                    diff = diff + (values1[i] - values2[i]) * (values1[i] - values2[i]);
+                }
+            }
+
+            return diff;
+        }
+
+        //Calculating the  Transformation Values for 2 Features
         private Transformation calculateTransformationValues(List<Feature> bestFeatures)
         {
             int trans_x = bestFeatures[0].point.X - bestFeatures[1].point.X;
@@ -220,25 +381,19 @@ namespace ImageRegistration2010
             return transformation;
         }
 
-        //Calculating the two best matching features from two list of features
+        //Calculating the two best matching features from two list of features - In Combination with findMinima
         private List<Feature> calculateBestMatchingFeatures(List<Feature> features1, List<Feature> features2)
         {
             double min_diff = double.MaxValue;
-            double min_diff_2nd = double.MaxValue;
             int index_feature1 = 0;
-            int index_feature1_2nd = 0;
             int index_feature2 = 0;
-            int index_feature2_2nd = 0;
             for (int i = 0; i < features1.Count; i++)
             {
                 for (int j = 0; j < features2.Count; j++)
                 {
-                    double diff = features1[i].calculateDifferenceOnlyByAngle(features2[j]);
+                    double diff = features1[i].calculateDifferenceWithAllAngles(features2[j]);
                     if (diff < min_diff)
                     {
-                        min_diff_2nd = min_diff;
-                        index_feature1_2nd = index_feature1;
-                        index_feature2_2nd = index_feature2;
                         min_diff = diff;
                         index_feature1 = i;
                         index_feature2 = j;
@@ -246,9 +401,35 @@ namespace ImageRegistration2010
                     }
                 }
             }
+
             List<Feature> bestFeatures = new List<Feature>();
             bestFeatures.Add(features1[index_feature1]);
             bestFeatures.Add(features2[index_feature2]);
+
+            features1.RemoveAt(index_feature1);
+            features2.RemoveAt(index_feature2);
+
+
+            int index_feature1_2nd = 0;
+            int index_feature2_2nd = 0;
+            double min_diff_2nd = double.MaxValue;
+
+            for (int i = 0; i < features1.Count; i++)
+            {
+                for (int j = 0; j < features2.Count; j++)
+                {
+                    double diff = features1[i].calculateDifferenceWithAllAngles(features2[j]);
+                    if (diff < min_diff_2nd)
+                    {
+                        min_diff_2nd = diff;
+                        index_feature1_2nd = i;
+                        index_feature2_2nd = j;
+
+                    }
+                }
+            }
+
+
             bestFeatures.Add(features1[index_feature1_2nd]);
             bestFeatures.Add(features2[index_feature2_2nd]);
 

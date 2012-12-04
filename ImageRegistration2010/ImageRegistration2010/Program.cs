@@ -17,8 +17,10 @@ namespace ImageRegistrationConsole
         {
 
             Console.WriteLine("######## IMAGE-REGISTRATION V1.0 ########\n");
-            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Pictures";
-            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\PairsRotate90";
+            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\PairsRotate";
+            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\PairsRotate90";
+            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\pairs";
+            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\pictures";
 
             if (args.Length != 0)
                 folderPath = args[0];
