@@ -43,32 +43,39 @@ namespace ImageRegistrationConsole
         //Create binary image with otsu threshold
         public Bitmap createBinaryOtsu(Bitmap img)
         {
-            Image<Bgr, Byte> image = new Image<Bgr, byte>(img);
+            Image<Bgra, Byte> image = new Image<Bgra, Byte>(img);
 
-            image._Dilate(10);
-            image._Erode(10);
+            if (Config.dilateBefore)
+                image._Dilate(Config.dilate);
+            
 
-            //image._SmoothGaussian(25);
-            image = image.SmoothMedian(41);
+            //image._SmoothGaussian(51);
+            image = image.SmoothMedian(Config.median);
             //image = image.SmoothBlur(10, 10);
 
+
+
+            image._Dilate(Config.dilate);
+            //image._Erode(7);
+
+
             //Vorder und Hintergrundtrennung mit OTSU.
-            Image<Gray, Byte> greyImage = image.Convert<Gray,byte>();
+            Image<Gray, Byte> greyImage = image.Convert<Gray,Byte>();
 
-            Image<Gray, Byte> otsuImage = new Image<Gray, Byte>(img.Size);
-
+            Image<Gray, Byte> otsuImage = new Image<Gray, Byte>(img.Size);           
 
             CvInvoke.cvThreshold(greyImage, otsuImage, 0, 255, Emgu.CV.CvEnum.THRESH.CV_THRESH_OTSU);
 
+
             return otsuImage.ToBitmap();
         }
+
+
 
         //Create contour
         public List<Contour<Point>> findContoursWithOpenCV(Bitmap img)
         {
             Image<Gray, Byte> grayFrame = new Image<Gray, byte>(img);
-
-
 
             //find contours
             var sourceContours = grayFrame.FindContours(Emgu.CV.CvEnum.CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_NONE, Emgu.CV.CvEnum.RETR_TYPE.CV_RETR_LIST);

@@ -49,6 +49,24 @@ namespace ImageRegistration2010
             return newbmp;
         }
 
+        public void exportFeatures(List<Feature> image1_features, List<Feature> image2_features)
+        {
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(Config.folderpath + "\\" + "angles.csv"))
+            {
+                int size;
+                if (image1_features.Count < image2_features.Count)
+                    size = image1_features.Count;
+                else
+                    size = image2_features.Count;
+
+                for (int i = 0; i < size; i++)
+                {
+                    String line;
+                    line = image1_features.ElementAt(i).angle_at_pixel + ";" + image2_features.ElementAt(i).angle_at_pixel;
+                    file.WriteLine(line);
+                }
+            }
+        }
 
     }
 }

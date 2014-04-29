@@ -13,17 +13,63 @@ namespace ImageRegistrationConsole
 {
     class Program
     {
+
+
         static void Main(string[] args)
         {
+            Console.WriteLine("#########################################");
+            Console.WriteLine("######## IMAGE-REGISTRATION V2.0 ########");
+            Console.WriteLine("########## By Julian Wolfert ############");
+            Console.WriteLine("#########################################");
+            Console.WriteLine("########## -r= NachbarnRegression #######");
+            Console.WriteLine("########## -m= MedianValue ##############");
+            Console.WriteLine("########## -d= DilateValue ##############");
+            Console.WriteLine("########## -b= DilateBeforeMedian #######");
+            Console.WriteLine("#########################################\n");
 
-            Console.WriteLine("######## IMAGE-REGISTRATION V1.0 ########\n");
-            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\PairsRotate";
-            String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\PairsRotate90";
-            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\pairs";
-            //String folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\pictures";
+            bool error = false;
+
+            //folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\PairsRotate90";
+            Config.folderpath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\Test";
+            //folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\pairs";
+            //folderPath = "C:\\Users\\Jules\\Dropbox\\Semester 2\\Medizinische Bildverarbeitung\\pictures";
 
             if (args.Length != 0)
-                folderPath = args[0];
+                Config.folderpath = args[0];
+            for (int i = 1; i < args.Length; i++)
+            {
+                switch (args[i].Substring(0, 3).ToLower())
+                {
+                    case "-r=":
+                        Config.linear_regression_neighbours = Convert.ToInt32(args[i].Substring(3));
+                        break;
+                    case "-m=":
+                        Config.median = Convert.ToInt32(args[i].Substring(3));
+                        break;
+                    case "-d=":
+                        Config.dilate = Convert.ToInt32(args[i].Substring(3));
+                        break;
+                    case "-b=":
+                        Config.dilateBefore = Convert.ToBoolean(args[i].Substring(3));
+                        break;
+                    default:
+                        error = true;
+                        break;
+                }
+            }
+            if (error)
+            {
+                Console.WriteLine("Unknown option");
+                return;
+            }
+
+            String folderPath = Config.folderpath;
+
+            Console.WriteLine("Nachbarn fuer Regressionsberechnung: " + Config.linear_regression_neighbours);
+            Console.WriteLine("Medianfilter-Wert: " + Config.median);
+            Console.WriteLine("Dilate-Wert: " + Config.dilate);
+            Console.WriteLine("Dilate vor Median: " + Config.dilateBefore);
+            Console.WriteLine("");
 
             DirectoryInfo dir = new DirectoryInfo(folderPath);
             Console.WriteLine("Lade Bilder aus dem Verzeichnis: " + folderPath);
@@ -103,9 +149,9 @@ namespace ImageRegistrationConsole
                 Bitmap registrated_originals = registrationProcessor.registrationBitmap(t1, A, B);
                 registrated_originals.Save(outputfolder + "\\registration.png", ImageFormat.Png);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("Fehler");
+                Console.WriteLine(e.ToString());
             }
 
 

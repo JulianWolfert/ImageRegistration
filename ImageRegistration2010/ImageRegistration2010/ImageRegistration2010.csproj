@@ -19,7 +19,7 @@
     <SccProvider>SubversionScc</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -63,9 +63,16 @@
     <Reference Include="MathNet.Numerics.IO">
       <HintPath>..\..\Libraries\Math.Net\MathNet.Numerics.IO.dll</HintPath>
     </Reference>
+    <Reference Include="RDotNet">
+      <HintPath>..\packages\R.NET.1.5.0\lib\net40\RDotNet.dll</HintPath>
+    </Reference>
+    <Reference Include="RDotNet.NativeLibrary">
+      <HintPath>..\packages\R.NET.1.5.0\lib\net40\RDotNet.NativeLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -77,7 +84,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AngleCalculator.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="Exporter.cs" />
+    <Compile Include="GraphAnalyzer.cs" />
+    <Compile Include="KSTest.cs" />
     <Compile Include="Line.cs" />
     <Compile Include="Pixel.cs" />
     <Compile Include="ImageProcessor.cs" />
@@ -89,6 +100,9 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
